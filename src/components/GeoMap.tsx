@@ -193,15 +193,18 @@ export const GeoMap: React.FC<GeoMapProps> = ({
   // Engine: 'VECTOR' (Flat Flat-Earth Projection) or 'SATELLITE' (Leaflet Tile Engine)
   const [mapEngine, setMapEngine] = useState<'VECTOR' | 'SATELLITE'>('VECTOR');
 
-  // Hierarchical Drilldown state
-  const [selectedCountry, setSelectedCountry] = useState<GeoCountry | null>(null);
+  const indiaDefaultCountry = REAL_JURISDICTIONS.find(c => c.code === 'IND') || null;
+
+  // Hierarchical Drilldown state (Defaults directly to India so India fully covers the map on load)
+  const [selectedCountry, setSelectedCountry] = useState<GeoCountry | null>(indiaDefaultCountry);
   const [selectedState, setSelectedState] = useState<GeoState | null>(null);
   const [selectedCity, setSelectedCity] = useState<GeoCity | null>(null);
   const [selectedFacility, setSelectedFacility] = useState<GeoFacility | null>(null);
 
-  // Vector canvas zoom and pan
-  const [zoomLevel, setZoomLevel] = useState(1);
-  const [panOffset, setPanOffset] = useState({ x: 0, y: 0 });
+  // Vector canvas zoom and pan (Calculated to center and fit India perfectly into view on load)
+  // projection([78.9629, 21.8]) -> x ≈ 719, y ≈ 215. Target zoom ≈ 2.85
+  const [zoomLevel, setZoomLevel] = useState(2.85);
+  const [panOffset, setPanOffset] = useState({ x: 500 - 719 * 2.85, y: 275 - 215 * 2.85 });
   const [isPanning, setIsPanning] = useState(false);
   const [startPan, setStartPan] = useState({ x: 0, y: 0 });
 
@@ -209,6 +212,7 @@ export const GeoMap: React.FC<GeoMapProps> = ({
   const [hoveredCountryName, setHoveredCountryName] = useState<string | null>(null);
   const [hoveredFacility, setHoveredFacility] = useState<GeoFacility | null>(null);
   const [hoveredCity, setHoveredCity] = useState<GeoCity | null>(null);
+  const [hoveredStateId, setHoveredStateId] = useState<string | null>(null);
 
   // Action Filter
   const [selectedActionFilter, setSelectedActionFilter] = useState<string>('ALL');
@@ -694,8 +698,13 @@ export const GeoMap: React.FC<GeoMapProps> = ({
       setSelectedState(null);
       setSelectedCity(null);
       setSelectedFacility(null);
-      zoomToCoordinate(78.9629, 21.8, 3.7);
+      zoomToCoordinate(78.9629, 21.8, 2.9);
     }
+  }, [zoomToCoordinate]);
+
+  // Initial load auto-centering on India
+  useEffect(() => {
+    zoomToCoordinate(78.9629, 21.8, 2.9);
   }, [zoomToCoordinate]);
 
   // Mouse Drag Panning
@@ -1209,39 +1218,29 @@ export const GeoMap: React.FC<GeoMapProps> = ({
                         >
                           <title>{`${node.flag} ${node.name} (${node.count} Tactical Sites) - Click to Zoom & Expand`}</title>
 
-                          {/* Concentric subtle radar ring */}
-                          <circle
-                            r="18"
-                            fill="none"
-                            stroke={node.dominantAction.color}
-                            strokeWidth="1.2"
-                            opacity="0.3"
-                            className="transition-all group-hover:scale-125"
-                          />
-
                           {/* Outer Action Halo */}
                           <circle
-                            r="13"
+                            r="8"
                             fill={node.dominantAction.haloColor}
                             stroke={node.dominantAction.color}
-                            strokeWidth="1.6"
-                            className="transition-all group-hover:scale-110"
+                            strokeWidth="1.2"
+                            className="transition-all group-hover:scale-125"
                           />
 
                           {/* Inner High Contrast Badge */}
                           <circle
-                            r="9"
+                            r="5.5"
                             fill="#243324"
                             stroke="#FBF9F5"
-                            strokeWidth="1.2"
+                            strokeWidth="0.8"
                           />
 
                           {/* Count text */}
                           <text
                             x="0"
-                            y="3"
+                            y="2"
                             textAnchor="middle"
-                            fontSize="8"
+                            fontSize="5.5"
                             fontWeight="800"
                             fill="#FBF9F5"
                             className="font-mono select-none pointer-events-none"
@@ -1249,24 +1248,24 @@ export const GeoMap: React.FC<GeoMapProps> = ({
                             {node.count}
                           </text>
 
-                          {/* Small Flag Badge Tag (Minimal, no huge pill) */}
-                          <g transform="translate(0, 15)" className="pointer-events-none transition-all group-hover:scale-105">
+                          {/* Minimal Flag Tag */}
+                          <g transform="translate(0, 10)" className="pointer-events-none">
                             <rect
-                              x="-18"
-                              y="-5"
-                              width="36"
-                              height="10"
-                              rx="5"
+                              x="-14"
+                              y="-4"
+                              width="28"
+                              height="8"
+                              rx="4"
                               fill="#243324"
                               fillOpacity="0.9"
                               stroke="#FBF9F5"
-                              strokeWidth="0.6"
+                              strokeWidth="0.5"
                             />
                             <text
                               x="0"
-                              y="2.5"
+                              y="2"
                               textAnchor="middle"
-                              fontSize="6.5"
+                              fontSize="5"
                               fontWeight="700"
                               fill="#FBF9F5"
                               className="font-sans select-none"
@@ -1283,44 +1282,47 @@ export const GeoMap: React.FC<GeoMapProps> = ({
                 {/* ============================================================
                     TIER 2: COUNTRY / STATE CENTROID NODES
                     (zoomLevel 2.2 - 3.8 OR when Country is selected)
-                    Renders 1 node per State centroid with facility count
+                    Renders 1 clean compact micro-badge per State centroid
                 ============================================================ */}
                 {(selectedCountry || zoomLevel >= 2.2) && (!selectedState && zoomLevel < 3.8) && (
                   <g className="state-tier-centroid-nodes">
                     {stateCentroidNodes.map(node => {
                       const isSelected = selectedState?.id === node.state.id;
+                      const isHovered = hoveredStateId === node.state.id;
                       return (
                         <g
                           key={node.id}
                           transform={`translate(${node.x}, ${node.y})`}
                           className="cursor-pointer group"
+                          onMouseEnter={() => setHoveredStateId(node.state.id)}
+                          onMouseLeave={() => setHoveredStateId(null)}
                           onClick={() => handleStateClick(node.state, node.country)}
                         >
                           <title>{`${node.name}, ${node.country.name} (${node.count} Tactical Sites) - Click to Zoom into State`}</title>
 
                           {/* Outer Action Halo */}
                           <circle
-                            r="12"
+                            r={isHovered ? 7.5 : 5.5}
                             fill={node.dominantAction.haloColor}
                             stroke={isSelected ? '#243324' : node.dominantAction.color}
-                            strokeWidth={isSelected ? '2' : '1.2'}
-                            className="transition-all group-hover:scale-115"
+                            strokeWidth={isSelected ? '1.5' : '0.9'}
+                            className="transition-all group-hover:scale-125"
                           />
 
                           {/* Inner Badge */}
                           <circle
-                            r="8.5"
+                            r={isHovered ? 5.2 : 4.0}
                             fill={isSelected ? '#7E9B82' : '#243324'}
                             stroke="#FBF9F5"
-                            strokeWidth="1"
+                            strokeWidth="0.7"
                           />
 
                           {/* Count text */}
                           <text
                             x="0"
-                            y="2.8"
+                            y="1.8"
                             textAnchor="middle"
-                            fontSize="7.5"
+                            fontSize={isHovered ? '5.5' : '4.8'}
                             fontWeight="800"
                             fill="#FBF9F5"
                             className="font-mono select-none pointer-events-none"
@@ -1328,31 +1330,33 @@ export const GeoMap: React.FC<GeoMapProps> = ({
                             {node.count}
                           </text>
 
-                          {/* State Label Tag */}
-                          <g transform="translate(0, 14)" className="pointer-events-none">
-                            <rect
-                              x="-26"
-                              y="-5"
-                              width="52"
-                              height="11"
-                              rx="5.5"
-                              fill="#243324"
-                              fillOpacity="0.9"
-                              stroke="#C8BFB0"
-                              strokeWidth="0.6"
-                            />
-                            <text
-                              x="0"
-                              y="2.5"
-                              textAnchor="middle"
-                              fontSize="6.5"
-                              fontWeight="700"
-                              fill="#FBF9F5"
-                              className="font-sans select-none"
-                            >
-                              {node.name.length > 9 ? node.name.slice(0, 8) + '…' : node.name}
-                            </text>
-                          </g>
+                          {/* Non-overlapping floating tooltip revealed ONLY on hover */}
+                          {isHovered && (
+                            <g transform="translate(0, -9)" className="pointer-events-none">
+                              <rect
+                                x="-24"
+                                y="-5"
+                                width="48"
+                                height="10"
+                                rx="5"
+                                fill="#243324"
+                                fillOpacity="0.96"
+                                stroke="#FBF9F5"
+                                strokeWidth="0.6"
+                              />
+                              <text
+                                x="0"
+                                y="2.2"
+                                textAnchor="middle"
+                                fontSize="5.5"
+                                fontWeight="700"
+                                fill="#FBF9F5"
+                                className="font-sans select-none"
+                              >
+                                {node.name} ({node.count})
+                              </text>
+                            </g>
+                          )}
                         </g>
                       );
                     })}
@@ -1362,7 +1366,7 @@ export const GeoMap: React.FC<GeoMapProps> = ({
                 {/* ============================================================
                     TIER 3: STATE / CITY & TACTICAL FACILITY DEEP DIVE
                     (zoomLevel >= 3.8 OR when State is selected)
-                    Renders City Pins and Individual Action-Coded Facility Points
+                    Renders City Pins and Small Tactical Action-Coded Facility Points
                 ============================================================ */}
                 {(selectedState || zoomLevel >= 3.8) && (
                   <g className="deep-dive-cities-and-facilities">
@@ -1373,6 +1377,7 @@ export const GeoMap: React.FC<GeoMapProps> = ({
                       if (!cityCoords) return null;
                       const [cx, cy] = cityCoords;
                       const isCitySelected = selectedCity?.id === city.id;
+                      const isCityHovered = hoveredCity?.id === city.id;
                       const parentCountry = selectedCountry || scopedCountries.find(c => c.states.some(s => s.cities.some(ci => ci.id === city.id)));
                       const parentState = selectedState || parentCountry?.states.find(s => s.cities.some(ci => ci.id === city.id));
 
@@ -1381,6 +1386,8 @@ export const GeoMap: React.FC<GeoMapProps> = ({
                           key={`city-${city.id}`}
                           transform={`translate(${cx}, ${cy})`}
                           className="cursor-pointer group"
+                          onMouseEnter={() => setHoveredCity(city)}
+                          onMouseLeave={() => setHoveredCity(null)}
                           onClick={() => {
                             if (parentState && parentCountry) {
                               handleCityClick(city, parentState, parentCountry);
@@ -1391,42 +1398,44 @@ export const GeoMap: React.FC<GeoMapProps> = ({
 
                           {/* Tiny subtle city dot */}
                           <circle
-                            r="2.5"
+                            r="1.6"
                             fill={isCitySelected ? '#243324' : '#FBF9F5'}
                             stroke="#243324"
-                            strokeWidth="0.8"
+                            strokeWidth="0.6"
                           />
 
-                          {/* Minimal City Label */}
-                          <g transform="translate(0, -7)" className="pointer-events-none">
-                            <rect
-                              x="-20"
-                              y="-4"
-                              width="40"
-                              height="9"
-                              rx="4.5"
-                              fill={isCitySelected ? '#243324' : '#FBF9F5'}
-                              fillOpacity="0.94"
-                              stroke={isCitySelected ? '#1A251A' : '#7E9B82'}
-                              strokeWidth="0.6"
-                            />
-                            <text
-                              x="0"
-                              y="2.2"
-                              textAnchor="middle"
-                              fontSize="5.5"
-                              fontWeight="700"
-                              fill={isCitySelected ? '#FBF9F5' : '#243324'}
-                              className="font-sans select-none"
-                            >
-                              {city.name}
-                            </text>
-                          </g>
+                          {/* Compact City Label on hover or selection */}
+                          {(isCitySelected || isCityHovered || zoomLevel >= 4.5) && (
+                            <g transform="translate(0, -6)" className="pointer-events-none">
+                              <rect
+                                x="-16"
+                                y="-3.5"
+                                width="32"
+                                height="7"
+                                rx="3.5"
+                                fill={isCitySelected ? '#243324' : '#FBF9F5'}
+                                fillOpacity="0.94"
+                                stroke={isCitySelected ? '#1A251A' : '#7E9B82'}
+                                strokeWidth="0.5"
+                              />
+                              <text
+                                x="0"
+                                y="1.8"
+                                textAnchor="middle"
+                                fontSize="4.8"
+                                fontWeight="700"
+                                fill={isCitySelected ? '#FBF9F5' : '#243324'}
+                                className="font-sans select-none"
+                              >
+                                {city.name}
+                              </text>
+                            </g>
+                          )}
                         </g>
                       );
                     })}
 
-                    {/* B. Individual Tactical Action-Colored Points */}
+                    {/* B. Individual Tactical Action-Colored Points (Small & Sharp) */}
                     {deepDiveFacilityPoints.map(fac => {
                       const isSelected = selectedFacility?.id === fac.id;
                       const isHovered = hoveredFacility?.id === fac.id;
@@ -1446,10 +1455,10 @@ export const GeoMap: React.FC<GeoMapProps> = ({
                           {/* Radar Ping on Active / Selected Points */}
                           {(isSelected || isHovered) && (
                             <circle
-                              r={isSelected ? 14 : 10}
+                              r={isSelected ? 8 : 6.5}
                               fill="none"
                               stroke={actionColor}
-                              strokeWidth="1.2"
+                              strokeWidth="0.8"
                               opacity="0.5"
                               className="animate-ping"
                             />
@@ -1457,24 +1466,24 @@ export const GeoMap: React.FC<GeoMapProps> = ({
 
                           {/* Outer Halo Tint */}
                           <circle
-                            r={isSelected ? 8 : isHovered ? 7 : 5.5}
+                            r={isSelected ? 5.2 : isHovered ? 4.5 : 3.6}
                             fill={fac.actionMeta.haloColor}
                             stroke={actionColor}
-                            strokeWidth={isSelected ? 1.8 : 1}
+                            strokeWidth={isSelected ? 1.4 : 0.8}
                             className="transition-all group-hover:scale-125"
                           />
 
                           {/* Inner High-Contrast Ring */}
                           <circle
-                            r={isSelected ? 4.5 : isHovered ? 4 : 3}
+                            r={isSelected ? 3.0 : isHovered ? 2.6 : 2.0}
                             fill="#FBF9F5"
                             stroke="#243324"
-                            strokeWidth="0.8"
+                            strokeWidth="0.6"
                           />
 
                           {/* Core Solid Action Color Dot */}
                           <circle
-                            r={isSelected ? 3 : isHovered ? 2.5 : 1.8}
+                            r={isSelected ? 1.8 : isHovered ? 1.5 : 1.2}
                             fill={actionColor}
                           />
                         </g>
