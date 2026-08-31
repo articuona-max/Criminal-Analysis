@@ -3,48 +3,38 @@ import L from 'leaflet';
 import { 
   Flame, 
   Layers, 
-  Sliders, 
-  Activity, 
   Search, 
   X, 
-  Compass, 
-  Maximize2, 
   Crosshair, 
   MapPin, 
   ShieldAlert, 
-  Anchor, 
-  Ship, 
-  Building2, 
-  Globe2, 
-  Eye, 
-  ExternalLink, 
-  ChevronRight, 
-  RotateCcw,
-  Sparkles,
-  Info,
-  DollarSign,
-  AlertTriangle,
-  ZoomIn,
-  ZoomOut,
-  Radio,
-  Clock,
-  Truck,
+  Radio, 
+  DollarSign, 
+  ZoomIn, 
+  ZoomOut, 
+  Compass,
+  Play,
+  Pause,
+  ChevronRight,
+  Maximize2,
+  Minimize2,
   Combine,
   Scale,
   FileCheck,
-  Navigation
+  CheckCircle2,
+  AlertTriangle,
+  Info,
+  ExternalLink,
+  ChevronDown
 } from 'lucide-react';
 import { POLENode, POLEEdge, CaseId } from '../types';
-import { REAL_CASE_PROFILES } from '../data/realCasesData';
 import { 
   REAL_4D_TRACKS, 
   REAL_FINANCIAL_FLOW_ARCS, 
   REAL_GEOFENCES, 
   REAL_ISOCHRONES, 
-  TelemetryTrack, 
-  FinancialFlowArc 
+  TelemetryTrack 
 } from '../data/intelligence4DEngine';
-import { SpatioTemporalPlayer } from './SpatioTemporalPlayer';
 import { FinancialFlowSankeyDrawer } from './FinancialFlowSankeyDrawer';
 import { CrossCaseNexusModal } from './CrossCaseNexusModal';
 import { ManifestRiskScorerModal } from './ManifestRiskScorerModal';
@@ -76,7 +66,7 @@ export const ACTION_CATEGORIES: Record<string, ActionCategoryMeta> = {
   INTERCEPT_SEIZURE: {
     key: 'INTERCEPT_SEIZURE',
     label: 'Customs Intercept & Physical Seizure',
-    shortLabel: 'Seizure & Intercept',
+    shortLabel: 'Seizure',
     color: '#DC2626',
     haloColor: 'rgba(220, 38, 38, 0.4)',
     badgeBg: 'bg-red-50',
@@ -86,7 +76,7 @@ export const ACTION_CATEGORIES: Record<string, ActionCategoryMeta> = {
   SOURCE_PRODUCTION: {
     key: 'SOURCE_PRODUCTION',
     label: 'Source & Illicit Production',
-    shortLabel: 'Source / Production',
+    shortLabel: 'Source',
     color: '#059669',
     haloColor: 'rgba(5, 150, 105, 0.4)',
     badgeBg: 'bg-emerald-50',
@@ -96,7 +86,7 @@ export const ACTION_CATEGORIES: Record<string, ActionCategoryMeta> = {
   COMMAND_TELEMETRY: {
     key: 'COMMAND_TELEMETRY',
     label: 'Command Hub & FBI Telemetry',
-    shortLabel: 'Command & Telemetry',
+    shortLabel: 'Command',
     color: '#2563EB',
     haloColor: 'rgba(37, 99, 235, 0.4)',
     badgeBg: 'bg-blue-50',
@@ -106,7 +96,7 @@ export const ACTION_CATEGORIES: Record<string, ActionCategoryMeta> = {
   OFFSHORE_HAWALA: {
     key: 'OFFSHORE_HAWALA',
     label: 'Offshore Sink & Hawala Laundering',
-    shortLabel: 'Offshore & Hawala',
+    shortLabel: 'Hawala',
     color: '#D97706',
     haloColor: 'rgba(217, 119, 6, 0.4)',
     badgeBg: 'bg-amber-50',
@@ -116,7 +106,7 @@ export const ACTION_CATEGORIES: Record<string, ActionCategoryMeta> = {
   TRANSIT_PORT: {
     key: 'TRANSIT_PORT',
     label: 'Maritime & Overland Transshipment',
-    shortLabel: 'Transit & Transshipment',
+    shortLabel: 'Transit Port',
     color: '#7C3AED',
     haloColor: 'rgba(124, 58, 237, 0.4)',
     badgeBg: 'bg-purple-50',
@@ -126,7 +116,7 @@ export const ACTION_CATEGORIES: Record<string, ActionCategoryMeta> = {
   EXTRADITION_TARGET: {
     key: 'EXTRADITION_TARGET',
     label: 'Extradition & Fugitive Warrant',
-    shortLabel: 'Extradition Target',
+    shortLabel: 'Extradition',
     color: '#E11D48',
     haloColor: 'rgba(225, 29, 72, 0.4)',
     badgeBg: 'bg-rose-50',
@@ -135,7 +125,7 @@ export const ACTION_CATEGORIES: Record<string, ActionCategoryMeta> = {
   }
 };
 
-// Real World Tactical Target Sites with GPS Coordinates
+// Tactical Target Sites with GPS Coordinates
 export interface RealTacticalPoint {
   id: string;
   name: string;
@@ -147,8 +137,8 @@ export interface RealTacticalPoint {
   jurisdiction: 'IND' | 'GBR' | 'ARE' | 'GLOBAL';
   actionType: keyof typeof ACTION_CATEGORIES;
   threatLevel: 'CRITICAL' | 'HIGH' | 'MEDIUM';
-  heatIntensity: number; // 0.1 - 1.0
-  heatRadius: number; // in meters for circle
+  heatIntensity: number;
+  heatRadius: number;
   seizureMetric: string;
   status: string;
   operationalNotes: string;
@@ -347,7 +337,7 @@ export const REAL_TACTICAL_SITES: RealTacticalPoint[] = [
   // LONDON & UK EXTRADITION SITES
   {
     id: 'site-london-westminster',
-    name: 'Westminster Magistrates Court & High Court of Justice',
+    name: 'Westminster Magistrates Court & High Court',
     code: 'GBR-LON-WMC-01',
     lat: 51.5205,
     lng: -0.1650,
@@ -387,7 +377,7 @@ export const REAL_TACTICAL_SITES: RealTacticalPoint[] = [
   },
   {
     id: 'site-london-mayfair',
-    name: 'Mayfair Old Bond Street Boutique & Centre Point Penthouse',
+    name: 'Mayfair Old Bond Street Boutique & Centre Point',
     code: 'GBR-LON-OBS-31',
     lat: 51.5090,
     lng: -0.1440,
@@ -531,7 +521,7 @@ export const REAL_TACTICAL_SITES: RealTacticalPoint[] = [
   },
   {
     id: 'site-new-york-sdny',
-    name: 'SDNY Federal District Court & Manhattan Boutiques',
+    name: 'SDNY Federal District Court & Boutiques',
     code: 'USA-NYC-SDNY-01',
     lat: 40.7138,
     lng: -74.0014,
@@ -551,7 +541,7 @@ export const REAL_TACTICAL_SITES: RealTacticalPoint[] = [
   },
   {
     id: 'site-hong-kong-hub',
-    name: 'Hong Kong Central & Tsim Sha Tsui Trading Hub',
+    name: 'Hong Kong Central & Tsim Sha Tsui Hub',
     code: 'HKG-HKG-TST-01',
     lat: 22.2819,
     lng: 114.1581,
@@ -571,7 +561,7 @@ export const REAL_TACTICAL_SITES: RealTacticalPoint[] = [
   },
   {
     id: 'site-st-kitts-sanctuary',
-    name: 'Basseterre CIP Sanctuary (St. Kitts & Nevis)',
+    name: 'Basseterre CIP Sanctuary (St. Kitts)',
     code: 'KNA-BAS-CIP-01',
     lat: 17.3026,
     lng: -62.7261,
@@ -591,6 +581,89 @@ export const REAL_TACTICAL_SITES: RealTacticalPoint[] = [
   }
 ];
 
+// Open, 100% Free, and Stadia Maps HD Tile Providers
+export interface OpenTileProvider {
+  id: string;
+  name: string;
+  tagline: string;
+  url: string;
+  subdomains?: string;
+  maxZoom: number;
+  className: string;
+  isRetina?: boolean;
+}
+
+// Map API Key (Stadia Maps / Stamen)
+export const MAP_API_KEY = 
+  (import.meta as any)?.env?.VITE_STADIA_MAP_API_KEY || 
+  (import.meta as any)?.env?.VITE_MAP_API_KEY || 
+  'eyJhbGciOiJIUzI1NiJ9.eyJhIjoiYWNfNTk4aXIzYmsiLCJqdGkiOiIyZmFiYTcxNyIsImV4cCI6MTc5MDg0MzEwMH0.kVAz0pHRgT-lpMVwd3GMsLdWTU0fNKJ9CUEVgx-Z6eE';
+
+export const OPEN_TILE_PROVIDERS: OpenTileProvider[] = [
+  {
+    id: 'stadia-smooth',
+    name: 'Stadia Alidade Smooth',
+    tagline: 'Ultra-crisp vector minimalist light',
+    url: `https://tiles.stadiamaps.com/tiles/alidade_smooth/{z}/{x}/{y}{r}.png?api_key=${MAP_API_KEY}`,
+    maxZoom: 20,
+    className: 'tiles-stadia-smooth',
+    isRetina: true
+  },
+  {
+    id: 'stadia-dark',
+    name: 'Stadia Alidade Dark',
+    tagline: 'Tactical midnight radar slate',
+    url: `https://tiles.stadiamaps.com/tiles/alidade_smooth_dark/{z}/{x}/{y}{r}.png?api_key=${MAP_API_KEY}`,
+    maxZoom: 20,
+    className: 'tiles-dark-slate',
+    isRetina: true
+  },
+  {
+    id: 'stadia-toner',
+    name: 'Stadia Stamen Toner',
+    tagline: 'High-contrast monochrome ink style',
+    url: `https://tiles.stadiamaps.com/tiles/stamen_toner/{z}/{x}/{y}{r}.png?api_key=${MAP_API_KEY}`,
+    maxZoom: 20,
+    className: 'tiles-toner',
+    isRetina: true
+  },
+  {
+    id: 'stadia-terrain',
+    name: 'Stadia Stamen Terrain',
+    tagline: 'Topographic shaded relief contours',
+    url: `https://tiles.stadiamaps.com/tiles/stamen_terrain/{z}/{x}/{y}{r}.png?api_key=${MAP_API_KEY}`,
+    maxZoom: 18,
+    className: 'tiles-topo',
+    isRetina: true
+  },
+  {
+    id: 'stadia-outdoors',
+    name: 'Stadia Outdoors',
+    tagline: 'Rich geographic & coastal topology',
+    url: `https://tiles.stadiamaps.com/tiles/outdoors/{z}/{x}/{y}{r}.png?api_key=${MAP_API_KEY}`,
+    maxZoom: 20,
+    className: 'tiles-outdoors',
+    isRetina: true
+  },
+  {
+    id: 'carto-light',
+    name: 'Minimal Positron',
+    tagline: 'Clean grayscale without visual noise',
+    url: 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
+    subdomains: 'abcd',
+    maxZoom: 19,
+    className: 'tiles-minimal'
+  },
+  {
+    id: 'osm-standard',
+    name: 'OpenStreetMap Standard',
+    tagline: 'Global public cartography',
+    url: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+    maxZoom: 19,
+    className: 'tiles-osm'
+  }
+];
+
 // Corridors
 export interface RealCorridor {
   id: string;
@@ -604,7 +677,7 @@ export interface RealCorridor {
 export const REAL_CORRIDORS: RealCorridor[] = [
   {
     id: 'corridor-heroin-talc',
-    name: 'Opium / Talc Transit Route (Helmand → Bandar Abbas → Mundra → Delhi)',
+    name: 'Opium / Talc Transit (Helmand → Bandar Abbas → Mundra → Delhi)',
     color: '#DC2626',
     dashArray: '6, 6',
     points: [
@@ -631,7 +704,7 @@ export const REAL_CORRIDORS: RealCorridor[] = [
   },
   {
     id: 'corridor-diamond-roundtrip',
-    name: 'Circular Diamond Invoicing (Surat → Dubai → Hong Kong → New York)',
+    name: 'Circular Diamond Invoicing (Surat → Dubai → HK → NYC)',
     color: '#2563EB',
     dashArray: '4, 4',
     points: [
@@ -667,7 +740,7 @@ export const GEO_PRESETS: GeoPreset[] = [
   },
   {
     id: 'GUJ',
-    name: 'Mundra & Gujarat',
+    name: 'Mundra Port',
     flag: '⚓',
     center: [22.84, 69.70],
     zoom: 10,
@@ -703,7 +776,7 @@ export const GEO_PRESETS: GeoPreset[] = [
   },
   {
     id: 'GLOBAL',
-    name: 'Global POLE Corridor',
+    name: 'Global POLE',
     flag: '🌐',
     center: [30.0, 50.0],
     zoom: 3,
@@ -723,6 +796,9 @@ export const GeoMap: React.FC<GeoMapProps> = ({
 }) => {
   const mapContainerRef = useRef<HTMLDivElement | null>(null);
   const leafletMapRef = useRef<L.Map | null>(null);
+  const activeTileLayerRef = useRef<L.TileLayer | null>(null);
+
+  // Layer groups
   const markersLayerGroupRef = useRef<L.LayerGroup | null>(null);
   const heatmapLayerGroupRef = useRef<L.LayerGroup | null>(null);
   const corridorsLayerGroupRef = useRef<L.LayerGroup | null>(null);
@@ -731,37 +807,37 @@ export const GeoMap: React.FC<GeoMapProps> = ({
   const geofencesLayerGroupRef = useRef<L.LayerGroup | null>(null);
   const isochronesLayerGroupRef = useRef<L.LayerGroup | null>(null);
 
-  // View & Layer Toggles
+  // Selected Tile Provider (Stadia Maps HD / Open)
+  const [activeTileId, setActiveTileId] = useState<string>('stadia-smooth');
   const [activePresetId, setActivePresetId] = useState<string>('IND');
-  const [tileStyle, setTileStyle] = useState<'parchment' | 'dark-slate' | 'voyager' | 'minimal'>('parchment');
-  const [showHeatmap, setShowHeatmap] = useState<boolean>(true);
-  const [heatmapOpacity, setHeatmapOpacity] = useState<number>(0.75);
-  const [heatmapRadiusMultiplier, setHeatmapRadiusMultiplier] = useState<number>(1.0);
+
+  // Minimalist Layer Toggles
+  const [showHeatmap, setShowHeatmap] = useState<boolean>(false);
   const [showCorridors, setShowCorridors] = useState<boolean>(true);
   const [showFinancialArcs, setShowFinancialArcs] = useState<boolean>(true);
-  const [showGeofences, setShowGeofences] = useState<boolean>(true);
-  const [showIsochrones, setShowIsochrones] = useState<boolean>(true);
+  const [showGeofences, setShowGeofences] = useState<boolean>(false);
   const [show4DTrack, setShow4DTrack] = useState<boolean>(true);
 
-  // Floating Panels & Drawers
-  const [showSettingsPanel, setShowSettingsPanel] = useState<boolean>(false);
-  const [showHotspotDrawer, setShowHotspotDrawer] = useState<boolean>(false);
+  // UI Drawer / Floating Panels
+  const [selectedSite, setSelectedSite] = useState<RealTacticalPoint | null>(null);
+  const [showLayerMenu, setShowLayerMenu] = useState<boolean>(false);
+  const [showTileMenu, setShowTileMenu] = useState<boolean>(false);
   const [show4DPlayer, setShow4DPlayer] = useState<boolean>(true);
+  const [is4DPlayerCollapsed, setIs4DPlayerCollapsed] = useState<boolean>(false);
 
-  // 6 Major Enhancement Modals
+  // Modals
   const [isSankeyDrawerOpen, setIsSankeyDrawerOpen] = useState<boolean>(false);
   const [isNexusModalOpen, setIsNexusModalOpen] = useState<boolean>(false);
   const [isManifestRiskModalOpen, setIsManifestRiskModalOpen] = useState<boolean>(false);
   const [isJudicialModeOpen, setIsJudicialModeOpen] = useState<boolean>(false);
 
-  // 4D Motion State
+  // 4D Motion Playback State
   const [activeTrack, setActiveTrack] = useState<TelemetryTrack>(REAL_4D_TRACKS[0]);
   const [currentWaypointIndex, setCurrentWaypointIndex] = useState<number>(0);
   const [isPlaying4D, setIsPlaying4D] = useState<boolean>(false);
   const [playbackSpeed, setPlaybackSpeed] = useState<number>(1);
 
-  // Filters & Selected State
-  const [selectedSite, setSelectedSite] = useState<RealTacticalPoint | null>(REAL_TACTICAL_SITES[0]);
+  // Filter State
   const [selectedActionFilter, setSelectedActionFilter] = useState<string>('ALL');
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [activeCaseFilter, setActiveCaseFilter] = useState<string>(propCaseId || 'ALL');
@@ -773,12 +849,12 @@ export const GeoMap: React.FC<GeoMapProps> = ({
     }
   }, [propCaseId]);
 
-  // 4D Playback Animation Timer Loop
+  // 4D Playback Animation Loop
   useEffect(() => {
     let interval: NodeJS.Timeout | null = null;
 
     if (isPlaying4D && activeTrack) {
-      const delay = Math.max(800, 2500 / playbackSpeed);
+      const delay = Math.max(700, 2200 / playbackSpeed);
       interval = setInterval(() => {
         setCurrentWaypointIndex(prev => {
           if (prev >= activeTrack.waypoints.length - 1) {
@@ -788,7 +864,7 @@ export const GeoMap: React.FC<GeoMapProps> = ({
           const next = prev + 1;
           const targetWp = activeTrack.waypoints[next];
           if (targetWp && leafletMapRef.current) {
-            leafletMapRef.current.panTo([targetWp.lat, targetWp.lng], { animate: true, duration: 0.8 });
+            leafletMapRef.current.panTo([targetWp.lat, targetWp.lng], { animate: true, duration: 0.6 });
           }
           return next;
         });
@@ -838,7 +914,7 @@ export const GeoMap: React.FC<GeoMapProps> = ({
     return REAL_CORRIDORS;
   }, [activeCaseFilter]);
 
-  // Initialize Real Leaflet Map
+  // Initialize Minimalist Leaflet Map (100% Free Open Tiles, No API Key)
   useEffect(() => {
     if (!mapContainerRef.current) return;
 
@@ -850,16 +926,19 @@ export const GeoMap: React.FC<GeoMapProps> = ({
         zoomControl: false,
         attributionControl: false,
         minZoom: 2,
-        maxZoom: 18
+        maxZoom: 19
       });
 
-      // CartoDB Positron / Voyager real world tiles
-      L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
-        subdomains: 'abcd',
-        maxZoom: 19
+      // Default Open Tile Layer (Carto Positron Light - Zero API Key)
+      const currentProvider = OPEN_TILE_PROVIDERS.find(p => p.id === activeTileId) || OPEN_TILE_PROVIDERS[0];
+      const tileLayer = L.tileLayer(currentProvider.url, {
+        subdomains: currentProvider.subdomains || 'abc',
+        maxZoom: currentProvider.maxZoom
       }).addTo(map);
 
-      // Layer groups for all tactical dimensions
+      activeTileLayerRef.current = tileLayer;
+
+      // Add Layer Groups
       const heatmapGroup = L.layerGroup().addTo(map);
       const isochronesGroup = L.layerGroup().addTo(map);
       const geofencesGroup = L.layerGroup().addTo(map);
@@ -872,11 +951,19 @@ export const GeoMap: React.FC<GeoMapProps> = ({
       isochronesLayerGroupRef.current = isochronesGroup;
       geofencesLayerGroupRef.current = geofencesGroup;
       financialArcsLayerGroupRef.current = financialArcsGroup;
-      corridorsGroup.addTo(map);
       corridorsLayerGroupRef.current = corridorsGroup;
       fourDTrackLayerGroupRef.current = fourDTrackGroup;
       markersLayerGroupRef.current = markersGroup;
+
       leafletMapRef.current = map;
+
+      // Close popup when map is clicked
+      map.on('click', (e) => {
+        // If clicking on empty map space, deselect site
+        if ((e.originalEvent.target as HTMLElement).tagName !== 'path' && !(e.originalEvent.target as HTMLElement).closest('.bullseye-marker-container')) {
+          setSelectedSite(null);
+        }
+      });
     }
 
     return () => {
@@ -887,17 +974,32 @@ export const GeoMap: React.FC<GeoMapProps> = ({
     };
   }, []);
 
-  // Update Tile Class when style changes
+  // Change Map Tile Provider without reloading (Zero API Key)
   useEffect(() => {
-    if (!mapContainerRef.current) return;
-    const container = mapContainerRef.current;
-    container.classList.remove('tiles-parchment', 'tiles-dark-slate', 'tiles-voyager', 'tiles-minimal');
-    container.classList.add(`tiles-${tileStyle}`);
-  }, [tileStyle]);
+    if (!leafletMapRef.current) return;
+    const provider = OPEN_TILE_PROVIDERS.find(p => p.id === activeTileId) || OPEN_TILE_PROVIDERS[0];
 
-  // Render Map Layers: Heatmap, Geofences, Isochrones, Financial Arcs, 4D Tracks, Markers
+    if (activeTileLayerRef.current) {
+      leafletMapRef.current.removeLayer(activeTileLayerRef.current);
+    }
+
+    const newTileLayer = L.tileLayer(provider.url, {
+      subdomains: provider.subdomains || 'abc',
+      maxZoom: provider.maxZoom
+    }).addTo(leafletMapRef.current);
+
+    activeTileLayerRef.current = newTileLayer;
+
+    // Update container styling class
+    if (mapContainerRef.current) {
+      OPEN_TILE_PROVIDERS.forEach(p => mapContainerRef.current?.classList.remove(p.className));
+      mapContainerRef.current.classList.add(provider.className);
+    }
+  }, [activeTileId]);
+
+  // Render Map Vectors, Corridors, Heatmap, and Markers
   useEffect(() => {
-    if (!leafletMapRef.current || !markersLayerGroupRef.current || !heatmapLayerGroupRef.current) return;
+    if (!leafletMapRef.current || !markersLayerGroupRef.current) return;
 
     const markersGroup = markersLayerGroupRef.current;
     const heatmapGroup = heatmapLayerGroupRef.current;
@@ -905,61 +1007,28 @@ export const GeoMap: React.FC<GeoMapProps> = ({
     const fourDGroup = fourDTrackLayerGroupRef.current;
     const financialGroup = financialArcsLayerGroupRef.current;
     const geofencesGroup = geofencesLayerGroupRef.current;
-    const isochronesGroup = isochronesLayerGroupRef.current;
 
     markersGroup.clearLayers();
-    heatmapGroup.clearLayers();
+    if (heatmapGroup) heatmapGroup.clearLayers();
     if (corridorsGroup) corridorsGroup.clearLayers();
     if (fourDGroup) fourDGroup.clearLayers();
     if (financialGroup) financialGroup.clearLayers();
     if (geofencesGroup) geofencesGroup.clearLayers();
-    if (isochronesGroup) isochronesGroup.clearLayers();
 
-    // 1. Draw Isochrone Reachability Contours
-    if (showIsochrones && isochronesGroup) {
-      REAL_ISOCHRONES.forEach(iso => {
-        iso.contours.forEach(contour => {
-          const circle = L.circle(iso.originCoords, {
-            radius: contour.radiusKm * 1000,
-            color: contour.color,
-            weight: 1.5,
-            dashArray: '4, 4',
-            fillColor: contour.color,
-            fillOpacity: contour.fillOpacity,
-            interactive: true
-          });
-
-          circle.bindTooltip(`
-            <div class="px-2 py-1 bg-[#243324] text-white rounded text-xs font-sans">
-              <strong>${iso.originName}</strong>: ${contour.description}
-            </div>
-          `, { className: 'custom-leaflet-popup' });
-
-          isochronesGroup.addLayer(circle);
-        });
-      });
-    }
-
-    // 2. Draw Geofence Polygons & Active Tripwires
+    // 1. Geofences
     if (showGeofences && geofencesGroup) {
       REAL_GEOFENCES.forEach(geo => {
         const poly = L.polygon(geo.polygonCoords, {
           color: geo.dangerLevel === 'CRITICAL' ? '#DC2626' : '#EA580C',
-          weight: 2,
+          weight: 1.5,
           fillColor: geo.dangerLevel === 'CRITICAL' ? '#DC2626' : '#EA580C',
-          fillOpacity: 0.15,
-          dashArray: '6, 3'
+          fillOpacity: 0.12,
+          dashArray: '5, 4'
         });
 
         poly.bindTooltip(`
-          <div class="px-2 py-1.5 bg-[#243324] text-white rounded-lg text-xs font-sans shadow-lg">
-            <div class="font-bold text-amber-300">🛡️ ${geo.name}</div>
-            <div class="text-[11px] text-[#C5D6C5] mt-0.5">${geo.tripwireRules}</div>
-            ${geo.activeBreaches.length > 0 ? `
-              <div class="mt-1 text-[10px] text-red-300 font-mono font-bold">
-                ⚠️ ACTIVE BREACH: ${geo.activeBreaches[0].targetName}
-              </div>
-            ` : ''}
+          <div class="px-2 py-1 bg-[#1F2937] text-white rounded text-xs font-sans">
+            <span class="font-bold text-amber-300">🛡️ ${geo.name}</span>
           </div>
         `, { className: 'custom-leaflet-popup' });
 
@@ -967,11 +1036,10 @@ export const GeoMap: React.FC<GeoMapProps> = ({
       });
     }
 
-    // 3. Draw Multi-Jurisdiction Financial Flow Arcs
+    // 2. Multi-Jurisdiction Financial Flow Arcs
     if (showFinancialArcs && financialGroup) {
       REAL_FINANCIAL_FLOW_ARCS.forEach(arc => {
-        // Calculate curved path midpoint
-        const midLat = (arc.sourceCoords[0] + arc.targetCoords[0]) / 2 + 3.5;
+        const midLat = (arc.sourceCoords[0] + arc.targetCoords[0]) / 2 + 3.0;
         const midLng = (arc.sourceCoords[1] + arc.targetCoords[1]) / 2;
         const curvePoints: [number, number][] = [
           arc.sourceCoords,
@@ -981,9 +1049,9 @@ export const GeoMap: React.FC<GeoMapProps> = ({
 
         const flowLine = L.polyline(curvePoints, {
           color: arc.color,
-          weight: 3,
-          dashArray: '8, 6',
-          opacity: 0.9,
+          weight: 2.5,
+          dashArray: '6, 5',
+          opacity: 0.85,
           lineCap: 'round',
           lineJoin: 'round'
         });
@@ -993,13 +1061,10 @@ export const GeoMap: React.FC<GeoMapProps> = ({
         });
 
         flowLine.bindTooltip(`
-          <div class="px-3 py-2 bg-[#243324] text-white rounded-xl shadow-xl text-xs font-sans">
-            <div class="font-bold text-amber-300 flex items-center gap-1">
-              <span>💳 ${arc.sourceCity} → ${arc.targetCity}</span>
-            </div>
-            <div class="font-mono text-sm font-bold text-white mt-1">${arc.amountINR} (${arc.amountUSD})</div>
-            <div class="text-[11px] text-[#C5D6C5] mt-0.5">${arc.sourceEntity} → ${arc.targetEntity}</div>
-            <div class="text-[10px] text-amber-200 mt-1 font-mono">${arc.transferType}</div>
+          <div class="px-2.5 py-1.5 bg-[#182018] text-white rounded-lg text-xs font-sans shadow-lg">
+            <div class="font-bold text-amber-300">💳 ${arc.sourceCity} → ${arc.targetCity}</div>
+            <div class="text-white font-mono font-bold mt-0.5">${arc.amountINR}</div>
+            <div class="text-[10px] text-emerald-300">${arc.transferType}</div>
           </div>
         `, { className: 'custom-leaflet-popup' });
 
@@ -1007,20 +1072,20 @@ export const GeoMap: React.FC<GeoMapProps> = ({
       });
     }
 
-    // 4. Draw Corridors
+    // 3. Trade Corridors
     if (showCorridors && corridorsGroup) {
       visibleCorridors.forEach(corridor => {
         const polyline = L.polyline(corridor.points, {
           color: corridor.color,
-          weight: 3,
+          weight: 2.5,
           dashArray: corridor.dashArray,
-          opacity: 0.85,
+          opacity: 0.75,
           lineCap: 'round',
           lineJoin: 'round'
         });
 
         polyline.bindTooltip(`
-          <div class="px-2 py-1 bg-[#FAF7F2] text-[#243324] border border-[#DDD4C0] rounded-md text-xs font-semibold">
+          <div class="px-2 py-1 bg-white text-[#182018] border border-gray-200 rounded text-xs font-semibold shadow-sm">
             ${corridor.name}
           </div>
         `, { sticky: true, className: 'custom-leaflet-popup' });
@@ -1029,85 +1094,69 @@ export const GeoMap: React.FC<GeoMapProps> = ({
       });
     }
 
-    // 5. Draw 4D Spatio-Temporal Motion Track & Live Animated Cursor
+    // 4. 4D Spatio-Temporal Motion Track
     if (show4DTrack && fourDGroup && activeTrack) {
       const allPoints: [number, number][] = activeTrack.waypoints.map(wp => [wp.lat, wp.lng]);
       
-      // Background full route line
       const fullRoute = L.polyline(allPoints, {
         color: activeTrack.color,
-        weight: 3.5,
-        opacity: 0.5,
+        weight: 2.5,
+        opacity: 0.4,
         dashArray: '4, 4'
       });
       fourDGroup.addLayer(fullRoute);
 
-      // Traversed path so far (solid color)
       const traversedPoints = allPoints.slice(0, currentWaypointIndex + 1);
       if (traversedPoints.length > 1) {
         const traversedLine = L.polyline(traversedPoints, {
           color: activeTrack.color,
-          weight: 4.5,
-          opacity: 0.95
+          weight: 3.5,
+          opacity: 0.9
         });
         fourDGroup.addLayer(traversedLine);
       }
 
-      // Waypoint dots
+      // Waypoint Dots
       activeTrack.waypoints.forEach((wp, idx) => {
         const isCurrent = idx === currentWaypointIndex;
         const isPassed = idx < currentWaypointIndex;
 
         const wpMarker = L.circleMarker([wp.lat, wp.lng], {
-          radius: isCurrent ? 8 : 4.5,
+          radius: isCurrent ? 7 : 4,
           color: isCurrent ? '#FFFFFF' : activeTrack.color,
-          weight: isCurrent ? 2.5 : 1.5,
+          weight: isCurrent ? 2 : 1,
           fillColor: isCurrent ? '#DC2626' : (isPassed ? activeTrack.color : '#FFFFFF'),
           fillOpacity: 1
         });
 
-        wpMarker.on('click', () => {
-          setCurrentWaypointIndex(idx);
-        });
-
-        wpMarker.bindTooltip(`
-          <div class="px-2 py-1 bg-[#243324] text-white rounded text-xs font-sans">
-            <strong>Step ${idx + 1}:</strong> ${wp.locationName} (${wp.speedKts} kts)
-          </div>
-        `, { className: 'custom-leaflet-popup' });
-
+        wpMarker.on('click', () => setCurrentWaypointIndex(idx));
         fourDGroup.addLayer(wpMarker);
       });
 
-      // Active Vessel/Truck Radar Icon Marker
+      // Active Radar Cursor Icon
       const currentWp = activeTrack.waypoints[currentWaypointIndex];
       if (currentWp) {
         const iconHtml = `
-          <div class="relative flex items-center justify-center cursor-pointer" style="width: 42px; height: 42px;">
-            <div class="absolute inset-0 rounded-full bg-red-500/30 animate-ping"></div>
-            <div class="relative flex items-center justify-center rounded-full shadow-2xl bg-[#243324] border-2 border-white text-white p-1.5" style="width: 32px; height: 32px;">
+          <div class="relative flex items-center justify-center" style="width: 32px; height: 32px;">
+            <div class="absolute inset-0 rounded-full bg-red-500/25 animate-ping"></div>
+            <div class="relative flex items-center justify-center rounded-full shadow-lg bg-[#182018] border-2 border-white text-white text-xs" style="width: 26px; height: 26px;">
               ${activeTrack.assetType === 'VESSEL' ? '🚢' : '🚛'}
             </div>
-            <!-- Heading Indicator Pointer -->
-            <div class="absolute -top-1 w-1.5 h-1.5 bg-amber-400 rounded-full" style="transform: rotate(${currentWp.headingDeg}deg)"></div>
           </div>
         `;
 
         const liveIcon = L.divIcon({
           html: iconHtml,
           className: 'custom-4d-live-icon',
-          iconSize: [42, 42],
-          iconAnchor: [21, 21]
+          iconSize: [32, 32],
+          iconAnchor: [16, 16]
         });
 
         const liveMarker = L.marker([currentWp.lat, currentWp.lng], { icon: liveIcon });
         liveMarker.bindTooltip(`
-          <div class="px-3 py-2 bg-[#243324] text-white rounded-xl shadow-xl text-xs font-sans">
+          <div class="px-2.5 py-1.5 bg-[#182018] text-white rounded-lg text-xs font-sans shadow-lg">
             <div class="font-bold text-amber-300">${activeTrack.assetName}</div>
-            <div class="text-[11px] text-[#C5D6C5] mt-0.5">${currentWp.locationName}</div>
-            <div class="font-mono text-[10px] mt-1 text-emerald-400">
-              Speed: ${currentWp.speedKts} kts • Heading: ${currentWp.headingDeg}°
-            </div>
+            <div class="text-[11px] text-gray-300">${currentWp.locationName} (${currentWp.speedKts} kts)</div>
           </div>
         `, { className: 'custom-leaflet-popup' });
 
@@ -1115,62 +1164,41 @@ export const GeoMap: React.FC<GeoMapProps> = ({
       }
     }
 
-    // 6. Draw Crime Density Heatmap Circles
-    if (showHeatmap) {
+    // 5. Heatmap (Optional)
+    if (showHeatmap && heatmapGroup) {
       visibleSites.forEach(site => {
-        const baseRadius = site.heatRadius * heatmapRadiusMultiplier;
-
-        const outerCircle = L.circle([site.lat, site.lng], {
-          radius: baseRadius * 1.5,
+        const circle = L.circle([site.lat, site.lng], {
+          radius: site.heatRadius * 0.9,
           color: 'transparent',
           fillColor: site.threatLevel === 'CRITICAL' ? '#DC2626' : '#EA580C',
-          fillOpacity: heatmapOpacity * 0.18 * site.heatIntensity,
+          fillOpacity: 0.35 * site.heatIntensity,
           interactive: false
         });
-
-        const midCircle = L.circle([site.lat, site.lng], {
-          radius: baseRadius * 0.85,
-          color: 'transparent',
-          fillColor: site.threatLevel === 'CRITICAL' ? '#DC2626' : '#F59E0B',
-          fillOpacity: heatmapOpacity * 0.40 * site.heatIntensity,
-          interactive: false
-        });
-
-        const coreCircle = L.circle([site.lat, site.lng], {
-          radius: baseRadius * 0.4,
-          color: 'transparent',
-          fillColor: '#991B1B',
-          fillOpacity: heatmapOpacity * 0.75 * site.heatIntensity,
-          interactive: false
-        });
-
-        heatmapGroup.addLayer(outerCircle);
-        heatmapGroup.addLayer(midCircle);
-        heatmapGroup.addLayer(coreCircle);
+        heatmapGroup.addLayer(circle);
       });
     }
 
-    // 7. Draw Real Concentric Bullseye Markers (⊙)
+    // 6. Minimalist Tactical Bullseye Target Markers (⊙)
     visibleSites.forEach(site => {
       const isSelected = selectedSite?.id === site.id;
       const actionMeta = ACTION_CATEGORIES[site.actionType] || ACTION_CATEGORIES.INTERCEPT_SEIZURE;
       const isCritical = site.threatLevel === 'CRITICAL';
 
       const customHtml = `
-        <div class="bullseye-marker-container relative flex items-center justify-center cursor-pointer" style="width: 32px; height: 32px;">
+        <div class="bullseye-marker-container relative flex items-center justify-center cursor-pointer" style="width: 28px; height: 28px;">
           ${isCritical ? `
-            <div class="absolute inset-0 rounded-full animate-radar" style="background-color: ${actionMeta.haloColor};"></div>
+            <div class="absolute inset-0 rounded-full animate-radar opacity-60" style="background-color: ${actionMeta.haloColor};"></div>
           ` : ''}
           <div class="relative flex items-center justify-center rounded-full transition-all shadow-md" style="
-            width: ${isSelected ? '26px' : '20px'}; 
-            height: ${isSelected ? '26px' : '20px'}; 
-            background: ${isSelected ? '#243324' : '#FAF7F2'}; 
-            border: 2px solid ${isSelected ? '#FBF9F5' : '#243324'};
+            width: ${isSelected ? '24px' : '18px'}; 
+            height: ${isSelected ? '24px' : '18px'}; 
+            background: ${isSelected ? '#182018' : '#FFFFFF'}; 
+            border: 2px solid ${isSelected ? '#FFFFFF' : actionMeta.color};
           ">
             <div class="rounded-full" style="
               width: ${isSelected ? '8px' : '6px'}; 
               height: ${isSelected ? '8px' : '6px'}; 
-              background: ${isSelected ? '#FBF9F5' : actionMeta.color};
+              background: ${isSelected ? '#FFFFFF' : actionMeta.color};
             "></div>
           </div>
         </div>
@@ -1179,43 +1207,44 @@ export const GeoMap: React.FC<GeoMapProps> = ({
       const customIcon = L.divIcon({
         html: customHtml,
         className: 'custom-bullseye-div-icon',
-        iconSize: [32, 32],
-        iconAnchor: [16, 16]
+        iconSize: [28, 28],
+        iconAnchor: [14, 14]
       });
 
       const marker = L.marker([site.lat, site.lng], { icon: customIcon });
 
       marker.on('click', () => {
         setSelectedSite(site);
+        if (leafletMapRef.current) {
+          leafletMapRef.current.panTo([site.lat, site.lng], { animate: true });
+        }
       });
 
       marker.bindTooltip(`
-        <div class="px-2.5 py-1.5 bg-[#243324] text-[#FBF9F5] rounded-lg shadow-xl text-xs font-sans">
+        <div class="px-2.5 py-1.5 bg-[#182018] text-white rounded-lg shadow-xl text-xs font-sans">
           <div class="font-bold flex items-center gap-1.5">
             <span class="w-2 h-2 rounded-full" style="background-color: ${actionMeta.color}"></span>
             <span>${site.name}</span>
           </div>
-          <div class="text-[11px] text-[#C8D6C9] mt-0.5">${site.city} • ${site.seizureMetric}</div>
+          <div class="text-[11px] text-gray-300 mt-0.5">${site.city} • ${site.seizureMetric}</div>
         </div>
       `, {
         direction: 'top',
-        offset: [0, -14],
+        offset: [0, -12],
         className: 'custom-leaflet-popup'
       });
 
       markersGroup.addLayer(marker);
     });
+
   }, [
     visibleSites, 
     visibleCorridors, 
     showHeatmap, 
-    heatmapOpacity, 
-    heatmapRadiusMultiplier, 
     showCorridors, 
     selectedSite,
     showFinancialArcs,
     showGeofences,
-    showIsochrones,
     show4DTrack,
     activeTrack,
     currentWaypointIndex
@@ -1226,7 +1255,7 @@ export const GeoMap: React.FC<GeoMapProps> = ({
     setActivePresetId(preset.id);
     if (leafletMapRef.current) {
       leafletMapRef.current.flyTo(preset.center, preset.zoom, {
-        duration: 1.2,
+        duration: 1.0,
         easeLinearity: 0.25
       });
     }
@@ -1240,311 +1269,511 @@ export const GeoMap: React.FC<GeoMapProps> = ({
     leafletMapRef.current?.flyTo(defaultPreset.center, defaultPreset.zoom);
   };
 
+  const currentTileProvider = OPEN_TILE_PROVIDERS.find(p => p.id === activeTileId) || OPEN_TILE_PROVIDERS[0];
+
   return (
     <div 
-      id="real-geo-gis-container"
-      className="relative w-full h-full bg-[#FAF7F2] select-none flex flex-col overflow-hidden font-sans border-t border-[#E8DFC9]"
+      id="minimal-geomap-container"
+      className="relative w-full h-full bg-[#F9FAFB] select-none flex flex-col overflow-hidden font-sans"
     >
       {/* ================================================================
-          TOP PRECISION CONTROLS HEADER BAR
+          TOP MINIMALIST FLOATING BAR
       ================================================================ */}
-      <div 
-        id="gis-map-top-bar" 
-        className="shrink-0 z-20 bg-[#FAF7F2]/95 backdrop-blur-md px-4 py-2.5 border-b border-[#E8DFC9] flex flex-wrap items-center justify-between gap-3 shadow-xs"
-      >
-        {/* Left: Quick Real-World Camera Presets */}
-        <div className="flex items-center gap-1.5 flex-wrap">
-          <div className="flex items-center gap-1 bg-[#EFE8DC] p-1 rounded-lg border border-[#DDD4C0]">
+      <div className="absolute top-3 left-3 right-3 z-30 flex items-center justify-between gap-2 pointer-events-none">
+        
+        {/* Left: Quick Region Camera Presets & Search */}
+        <div className="flex items-center gap-1.5 bg-white/95 backdrop-blur-md px-2 py-1.5 rounded-xl shadow-md border border-gray-200/80 pointer-events-auto">
+          <div className="flex items-center gap-1">
             {GEO_PRESETS.map(preset => {
               const isActive = preset.id === activePresetId;
               return (
                 <button
                   key={preset.id}
-                  id={`btn-preset-${preset.id}`}
                   onClick={() => handleSelectPreset(preset)}
-                  className={`px-2.5 py-1 rounded-md text-xs font-semibold flex items-center gap-1.5 transition-all ${
+                  className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition-all flex items-center gap-1 ${
                     isActive 
-                      ? 'bg-[#243324] text-[#FBF9F5] shadow-xs' 
-                      : 'text-[#4A5B4C] hover:text-[#243324] hover:bg-[#E4DAC6]'
+                      ? 'bg-[#182018] text-white shadow-xs' 
+                      : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
                   }`}
                   title={preset.description}
                 >
-                  <span className="text-sm">{preset.flag}</span>
+                  <span className="text-xs">{preset.flag}</span>
                   <span className="hidden sm:inline">{preset.name}</span>
                 </button>
               );
             })}
           </div>
 
-          <div className="h-4 w-px bg-[#DDD4C0] mx-1 hidden sm:block" />
+          <div className="h-4 w-px bg-gray-200 mx-1 hidden md:block" />
 
-          {/* 4D MOTION PLAYBACK TOGGLE */}
-          <button
-            id="btn-toggle-4d-playback"
-            onClick={() => setShow4DPlayer(prev => !prev)}
-            className={`px-2.5 py-1 rounded-lg text-xs font-bold flex items-center gap-1.5 border transition-all ${
-              show4DPlayer
-                ? 'bg-[#243324] text-[#FBF9F5] border-[#243324] shadow-xs'
-                : 'bg-[#FFFFFF] text-[#4A5B4C] border-[#DDD4C0] hover:bg-[#EFE8DC]'
-            }`}
-            title="Toggle 4D Vessel & Overland Telemetry Playback"
-          >
-            <Radio className="w-3.5 h-3.5 text-emerald-400 animate-pulse" />
-            <span>4D Motion {show4DPlayer ? 'ON' : 'OFF'}</span>
-          </button>
-
-          {/* FINANCIAL ARCS & SANKEY DRAWER TRIGGER */}
-          <button
-            id="btn-toggle-financial-arcs"
-            onClick={() => setIsSankeyDrawerOpen(true)}
-            className="px-2.5 py-1 rounded-lg text-xs font-bold flex items-center gap-1.5 border bg-[#FFFFFF] text-[#243324] border-[#DDD4C0] hover:bg-[#EFE8DC] transition-all"
-            title="Open Multi-Jurisdiction Financial Flow & Hawala Engine"
-          >
-            <DollarSign className="w-3.5 h-3.5 text-amber-600" />
-            <span>Financial Arcs / Sankey</span>
-          </button>
-
-          {/* GEOFENCES & ISOCHRONES TOGGLE */}
-          <button
-            id="btn-toggle-geofences"
-            onClick={() => {
-              setShowGeofences(p => !p);
-              setShowIsochrones(p => !p);
-            }}
-            className={`px-2.5 py-1 rounded-lg text-xs font-medium flex items-center gap-1.5 border transition-all ${
-              showGeofences
-                ? 'bg-[#EFE8DC] text-[#243324] border-[#C5BDAA]'
-                : 'bg-[#FFFFFF] text-[#7A8C7A] border-[#DDD4C0]'
-            }`}
-            title="Toggle 12NM Maritime Geofencing & Isochrone Reachability"
-          >
-            <ShieldAlert className="w-3.5 h-3.5 text-rose-700" />
-            <span>Geofence & Reachability</span>
-          </button>
-
-          {/* CRIME DENSITY HEAT MAP LAYER TOGGLE */}
-          <button
-            id="btn-toggle-real-heatmap"
-            onClick={() => setShowHeatmap(prev => !prev)}
-            className={`px-2.5 py-1 rounded-lg text-xs font-bold flex items-center gap-1.5 border transition-all ${
-              showHeatmap
-                ? 'bg-gradient-to-r from-[#DC2626] to-[#EA580C] text-white border-transparent shadow-xs'
-                : 'bg-[#FFFFFF] text-[#6B7D6C] border-[#DDD4C0] hover:bg-[#EFE8DC]'
-            }`}
-            title="Toggle Crime Density Heat Map Layer on Real Map"
-          >
-            <Flame className={`w-3.5 h-3.5 ${showHeatmap ? 'text-amber-200 fill-amber-200' : 'text-[#6B7D6C]'}`} />
-            <span>Heatmap {showHeatmap ? 'ON' : 'OFF'}</span>
-          </button>
+          {/* Quick Search */}
+          <div className="relative hidden md:flex items-center">
+            <Search className="w-3.5 h-3.5 text-gray-400 absolute left-2 pointer-events-none" />
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Search site, port, entity..."
+              className="pl-7 pr-6 py-1 bg-gray-50 border border-gray-200 rounded-lg text-xs text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-400 w-44"
+            />
+            {searchQuery && (
+              <button 
+                onClick={() => setSearchQuery('')}
+                className="absolute right-2 text-gray-400 hover:text-gray-600"
+              >
+                <X className="w-3 h-3" />
+              </button>
+            )}
+          </div>
         </div>
 
-        {/* Right: 6 Major Enhancement Quick Actions */}
-        <div className="flex items-center gap-2">
+        {/* Right: Map Style, Layers & Investigation Tools */}
+        <div className="flex items-center gap-1.5 pointer-events-auto">
           
-          {/* Syndicate Nexus Studio */}
+          {/* Map Layer Controls Menu Dropdown */}
+          <div className="relative">
+            <button
+              onClick={() => {
+                setShowLayerMenu(prev => !prev);
+                setShowTileMenu(false);
+              }}
+              className="flex items-center gap-1.5 px-3 py-1.5 bg-white/95 backdrop-blur-md rounded-xl text-xs font-semibold text-gray-700 shadow-md border border-gray-200/80 hover:bg-gray-50 transition-all"
+              title="Toggle Map Data Layers"
+            >
+              <Layers className="w-3.5 h-3.5 text-gray-600" />
+              <span className="hidden sm:inline">Layers</span>
+              <ChevronDown className="w-3 h-3 text-gray-400" />
+            </button>
+
+            {showLayerMenu && (
+              <div className="absolute right-0 mt-1.5 w-56 bg-white rounded-xl shadow-xl border border-gray-200 p-2 z-50 text-xs font-medium space-y-1">
+                <div className="text-[10px] font-bold uppercase tracking-wider text-gray-400 px-2 py-1">
+                  Tactical Overlays
+                </div>
+
+                <label className="flex items-center justify-between px-2 py-1.5 hover:bg-gray-50 rounded-lg cursor-pointer">
+                  <span className="flex items-center gap-1.5 text-gray-700">
+                    <Radio className="w-3.5 h-3.5 text-emerald-600" />
+                    4D Motion Tracks
+                  </span>
+                  <input
+                    type="checkbox"
+                    checked={show4DTrack}
+                    onChange={(e) => setShow4DTrack(e.target.checked)}
+                    className="rounded text-emerald-600 focus:ring-0"
+                  />
+                </label>
+
+                <label className="flex items-center justify-between px-2 py-1.5 hover:bg-gray-50 rounded-lg cursor-pointer">
+                  <span className="flex items-center gap-1.5 text-gray-700">
+                    <DollarSign className="w-3.5 h-3.5 text-amber-600" />
+                    Financial Flow Arcs
+                  </span>
+                  <input
+                    type="checkbox"
+                    checked={showFinancialArcs}
+                    onChange={(e) => setShowFinancialArcs(e.target.checked)}
+                    className="rounded text-amber-600 focus:ring-0"
+                  />
+                </label>
+
+                <label className="flex items-center justify-between px-2 py-1.5 hover:bg-gray-50 rounded-lg cursor-pointer">
+                  <span className="flex items-center gap-1.5 text-gray-700">
+                    <Compass className="w-3.5 h-3.5 text-blue-600" />
+                    Trade Corridors
+                  </span>
+                  <input
+                    type="checkbox"
+                    checked={showCorridors}
+                    onChange={(e) => setShowCorridors(e.target.checked)}
+                    className="rounded text-blue-600 focus:ring-0"
+                  />
+                </label>
+
+                <label className="flex items-center justify-between px-2 py-1.5 hover:bg-gray-50 rounded-lg cursor-pointer">
+                  <span className="flex items-center gap-1.5 text-gray-700">
+                    <ShieldAlert className="w-3.5 h-3.5 text-rose-600" />
+                    Geofences (12NM)
+                  </span>
+                  <input
+                    type="checkbox"
+                    checked={showGeofences}
+                    onChange={(e) => setShowGeofences(e.target.checked)}
+                    className="rounded text-rose-600 focus:ring-0"
+                  />
+                </label>
+
+                <label className="flex items-center justify-between px-2 py-1.5 hover:bg-gray-50 rounded-lg cursor-pointer">
+                  <span className="flex items-center gap-1.5 text-gray-700">
+                    <Flame className="w-3.5 h-3.5 text-red-600" />
+                    Crime Density Heatmap
+                  </span>
+                  <input
+                    type="checkbox"
+                    checked={showHeatmap}
+                    onChange={(e) => setShowHeatmap(e.target.checked)}
+                    className="rounded text-red-600 focus:ring-0"
+                  />
+                </label>
+              </div>
+            )}
+          </div>
+
+          {/* Map Tile Style Selector Dropdown */}
+          <div className="relative">
+            <button
+              onClick={() => {
+                setShowTileMenu(prev => !prev);
+                setShowLayerMenu(false);
+              }}
+              className="flex items-center gap-1.5 px-3 py-1.5 bg-white/95 backdrop-blur-md rounded-xl text-xs font-semibold text-gray-700 shadow-md border border-gray-200/80 hover:bg-gray-50 transition-all"
+              title="Cartographic Map Tile Providers (Stadia Maps HD / Open)"
+            >
+              <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
+              <span className="hidden sm:inline">{currentTileProvider.name}</span>
+              <ChevronDown className="w-3 h-3 text-gray-400" />
+            </button>
+
+            {showTileMenu && (
+              <div className="absolute right-0 mt-1.5 w-64 bg-white rounded-xl shadow-xl border border-gray-200 p-2 z-50 text-xs space-y-1">
+                <div className="px-2 py-1 flex items-center justify-between">
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400">Map Styles & Cartography</span>
+                  <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded">HD Enabled</span>
+                </div>
+
+                {OPEN_TILE_PROVIDERS.map(p => {
+                  const isSelected = p.id === activeTileId;
+                  return (
+                    <button
+                      key={p.id}
+                      onClick={() => {
+                        setActiveTileId(p.id);
+                        setShowTileMenu(false);
+                      }}
+                      className={`w-full text-left px-2.5 py-2 rounded-lg transition-all flex flex-col ${
+                        isSelected 
+                          ? 'bg-gray-100 font-bold text-gray-900' 
+                          : 'text-gray-700 hover:bg-gray-50'
+                      }`}
+                    >
+                      <div className="flex items-center justify-between">
+                        <span>{p.name}</span>
+                        {isSelected && <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />}
+                      </div>
+                      <span className="text-[10px] text-gray-400 font-normal">{p.tagline}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+
+          {/* Quick Investigation Modules */}
           <button
-            onClick={() => setIsNexusModalOpen(true)}
-            className="px-2.5 py-1 rounded-lg bg-[#FAF7F2] border border-[#DDD4C0] text-xs font-semibold text-[#243324] hover:bg-[#EFE8DC] flex items-center gap-1"
-            title="Cross-Case Entity Resolution & Overlap Matrix"
+            onClick={() => setIsSankeyDrawerOpen(true)}
+            className="px-2.5 py-1.5 bg-white/95 backdrop-blur-md rounded-xl text-xs font-semibold text-amber-800 shadow-md border border-gray-200/80 hover:bg-amber-50 flex items-center gap-1 transition-all"
+            title="Financial Flows & Hawala Engine"
           >
-            <Combine className="w-3.5 h-3.5 text-emerald-600" />
-            <span className="hidden md:inline">Syndicate Nexus</span>
+            <DollarSign className="w-3.5 h-3.5 text-amber-600" />
+            <span className="hidden md:inline">Financials</span>
           </button>
 
-          {/* Manifest Risk Scorer */}
-          <button
-            onClick={() => setIsManifestRiskModalOpen(true)}
-            className="px-2.5 py-1 rounded-lg bg-[#FAF7F2] border border-[#DDD4C0] text-xs font-semibold text-[#243324] hover:bg-[#EFE8DC] flex items-center gap-1"
-            title="Algorithmic Manifest Anomaly & Port Vulnerability Index"
-          >
-            <Scale className="w-3.5 h-3.5 text-amber-600" />
-            <span className="hidden md:inline">Manifest Scorer</span>
-          </button>
-
-          {/* Judicial Courtroom Mode */}
           <button
             onClick={() => setIsJudicialModeOpen(true)}
-            className="px-3 py-1 rounded-lg bg-[#243324] text-[#FBF9F5] text-xs font-bold hover:bg-[#182418] flex items-center gap-1.5 shadow-xs"
-            title="Enter Courtroom-Ready Evidence Presentation & SHA-256 Verification"
+            className="px-3 py-1.5 bg-[#182018] text-white rounded-xl text-xs font-bold shadow-md hover:bg-black flex items-center gap-1.5 transition-all"
+            title="Judicial Evidence Presentation Mode"
           >
             <FileCheck className="w-3.5 h-3.5 text-amber-300" />
-            <span>Judicial Mode</span>
+            <span className="hidden sm:inline">Judicial</span>
           </button>
 
-          {/* Map Style Selector */}
-          <select
-            value={tileStyle}
-            onChange={(e) => setTileStyle(e.target.value as any)}
-            className="bg-[#FFFFFF] border border-[#DDD4C0] rounded-lg px-2 py-1 text-xs text-[#243324] font-medium"
-          >
-            <option value="parchment">Parchment Style</option>
-            <option value="dark-slate">Dark Slate Radar</option>
-            <option value="voyager">Standard Voyager</option>
-            <option value="minimal">Minimalist Gray</option>
-          </select>
         </div>
       </div>
 
       {/* ================================================================
-          REAL LEAFLET MAP CANVAS CONTAINER
+          MAP CANVAS CONTAINER (Leaflet with 100% Free Open Tiles)
       ================================================================ */}
       <div className="relative flex-1 w-full h-full overflow-hidden">
         <div 
           ref={mapContainerRef} 
-          className={`w-full h-full z-0 tiles-${tileStyle}`}
+          className="w-full h-full z-0"
           style={{ width: '100%', height: '100%' }}
         />
 
-        {/* Floating 4D Spatio-Temporal Motion Player (Bottom Left) */}
-        {show4DPlayer && (
-          <div className="absolute bottom-4 left-4 z-20 max-w-md w-full">
-            <SpatioTemporalPlayer
-              selectedCaseId={activeCaseFilter as any}
-              activeTrack={activeTrack}
-              onSelectTrack={(t) => {
-                setActiveTrack(t);
-                setCurrentWaypointIndex(0);
-                if (leafletMapRef.current && t.waypoints[0]) {
-                  leafletMapRef.current.flyTo([t.waypoints[0].lat, t.waypoints[0].lng], 8);
-                }
-              }}
-              currentWaypointIndex={currentWaypointIndex}
-              onWaypointChange={(idx) => {
-                setCurrentWaypointIndex(idx);
-                const targetWp = activeTrack?.waypoints[idx];
-                if (targetWp && leafletMapRef.current) {
-                  leafletMapRef.current.panTo([targetWp.lat, targetWp.lng], { animate: true });
-                }
-              }}
-              isPlaying={isPlaying4D}
-              onTogglePlay={() => setIsPlaying4D(p => !p)}
-              playbackSpeed={playbackSpeed}
-              onChangeSpeed={setPlaybackSpeed}
-              onClose={() => setShow4DPlayer(false)}
-            />
-          </div>
-        )}
-
-        {/* Floating Zoom & Reset Navigation Controls (Top Right) */}
-        <div className="absolute top-4 right-4 z-10 flex flex-col gap-1.5 bg-[#FAF7F2]/95 backdrop-blur-md p-1.5 rounded-lg border border-[#DDD4C0] shadow-xs">
+        {/* Floating Minimalist Zoom & Recenter Controls (Bottom Right) */}
+        <div className="absolute bottom-6 right-4 z-20 flex flex-col gap-1.5 bg-white/95 backdrop-blur-md p-1 rounded-xl shadow-lg border border-gray-200">
           <button
-            id="btn-real-zoom-in"
             onClick={handleZoomIn}
+            className="w-8 h-8 flex items-center justify-center text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
             title="Zoom In"
-            className="p-1.5 rounded-md hover:bg-[#EFE8DC] text-[#243324] transition-colors"
           >
             <ZoomIn className="w-4 h-4" />
           </button>
           <button
-            id="btn-real-zoom-out"
             onClick={handleZoomOut}
+            className="w-8 h-8 flex items-center justify-center text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
             title="Zoom Out"
-            className="p-1.5 rounded-md hover:bg-[#EFE8DC] text-[#243324] transition-colors"
           >
             <ZoomOut className="w-4 h-4" />
           </button>
-          <div className="h-px w-full bg-[#DDD4C0]" />
+          <div className="h-px bg-gray-200 mx-1" />
           <button
-            id="btn-real-reset-view"
             onClick={handleReset}
-            title="Reset to Active Preset View"
-            className="p-1.5 rounded-md hover:bg-[#EFE8DC] text-[#243324] transition-colors"
+            className="w-8 h-8 flex items-center justify-center text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
+            title="Reset to Active Region"
           >
-            <RotateCcw className="w-4 h-4" />
+            <Crosshair className="w-4 h-4 text-emerald-700" />
           </button>
         </div>
+
+        {/* Floating Minimalist 4D Motion Player (Bottom Left) */}
+        {show4DTrack && show4DPlayer && (
+          <div className="absolute bottom-6 left-4 z-20 max-w-sm w-full bg-white/95 backdrop-blur-md rounded-2xl p-3 shadow-xl border border-gray-200/90 text-xs font-sans">
+            
+            {/* Header / Collapse */}
+            <div className="flex items-center justify-between pb-2 border-b border-gray-100">
+              <div className="flex items-center gap-1.5">
+                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                <span className="font-bold text-gray-800">4D Telemetry Track</span>
+                <span className="text-[10px] text-gray-400 font-mono">({activeTrack.assetType})</span>
+              </div>
+              <div className="flex items-center gap-1">
+                <button
+                  onClick={() => setIs4DPlayerCollapsed(prev => !prev)}
+                  className="text-gray-400 hover:text-gray-600 p-1"
+                >
+                  {is4DPlayerCollapsed ? <Maximize2 className="w-3 h-3" /> : <Minimize2 className="w-3 h-3" />}
+                </button>
+                <button
+                  onClick={() => setShow4DPlayer(false)}
+                  className="text-gray-400 hover:text-gray-600 p-1"
+                >
+                  <X className="w-3 h-3" />
+                </button>
+              </div>
+            </div>
+
+            {!is4DPlayerCollapsed && (
+              <div className="mt-2 space-y-2.5">
+                {/* Track Selector */}
+                <div className="flex items-center gap-1">
+                  {REAL_4D_TRACKS.map(t => (
+                    <button
+                      key={t.id}
+                      onClick={() => {
+                        setActiveTrack(t);
+                        setCurrentWaypointIndex(0);
+                        setIsPlaying4D(false);
+                      }}
+                      className={`flex-1 py-1 px-1.5 rounded-lg text-[11px] font-semibold truncate transition-all ${
+                        activeTrack.id === t.id 
+                          ? 'bg-[#182018] text-white shadow-xs' 
+                          : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                      }`}
+                    >
+                      {t.assetName.split(' ')[0]} {t.assetType === 'VESSEL' ? '🚢' : '🚛'}
+                    </button>
+                  ))}
+                </div>
+
+                {/* Waypoint Info */}
+                {activeTrack.waypoints[currentWaypointIndex] && (
+                  <div className="bg-gray-50 p-2 rounded-xl border border-gray-100">
+                    <div className="font-bold text-gray-900 truncate">
+                      {activeTrack.waypoints[currentWaypointIndex].locationName}
+                    </div>
+                    <div className="flex items-center justify-between text-[10px] text-gray-500 mt-1">
+                      <span>Speed: <strong>{activeTrack.waypoints[currentWaypointIndex].speedKts} kts</strong></span>
+                      <span>Heading: <strong>{activeTrack.waypoints[currentWaypointIndex].headingDeg}°</strong></span>
+                      <span>Step {currentWaypointIndex + 1}/{activeTrack.waypoints.length}</span>
+                    </div>
+                  </div>
+                )}
+
+                {/* Progress Scrubber Slider */}
+                <input
+                  type="range"
+                  min={0}
+                  max={activeTrack.waypoints.length - 1}
+                  value={currentWaypointIndex}
+                  onChange={(e) => {
+                    const idx = Number(e.target.value);
+                    setCurrentWaypointIndex(idx);
+                    const targetWp = activeTrack.waypoints[idx];
+                    if (targetWp && leafletMapRef.current) {
+                      leafletMapRef.current.panTo([targetWp.lat, targetWp.lng], { animate: true });
+                    }
+                  }}
+                  className="w-full accent-emerald-600 cursor-pointer h-1.5 bg-gray-200 rounded-lg"
+                />
+
+                {/* Controls: Play/Pause & Speed */}
+                <div className="flex items-center justify-between pt-1">
+                  <div className="flex items-center gap-1.5">
+                    <button
+                      onClick={() => setIsPlaying4D(prev => !prev)}
+                      className="px-3 py-1 rounded-lg bg-[#182018] text-white font-bold flex items-center gap-1 hover:bg-black transition-colors"
+                    >
+                      {isPlaying4D ? <Pause className="w-3 h-3" /> : <Play className="w-3 h-3" />}
+                      <span>{isPlaying4D ? 'Pause' : 'Play'}</span>
+                    </button>
+
+                    <button
+                      onClick={() => {
+                        setCurrentWaypointIndex(0);
+                        setIsPlaying4D(false);
+                      }}
+                      className="px-2 py-1 rounded-lg bg-gray-100 text-gray-600 hover:bg-gray-200 font-medium"
+                    >
+                      Reset
+                    </button>
+                  </div>
+
+                  <div className="flex items-center gap-1 bg-gray-100 p-0.5 rounded-lg text-[10px] font-bold">
+                    {[1, 2, 4].map(s => (
+                      <button
+                        key={s}
+                        onClick={() => setPlaybackSpeed(s)}
+                        className={`px-1.5 py-0.5 rounded ${playbackSpeed === s ? 'bg-white text-gray-900 shadow-2xs' : 'text-gray-500'}`}
+                      >
+                        {s}x
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Floating Minimalist Tactical Inspector Card (Right Side) */}
+        {selectedSite && (
+          <div className="absolute top-16 right-4 z-20 w-80 max-w-[calc(100vw-2rem)] bg-white/95 backdrop-blur-md rounded-2xl p-4 shadow-2xl border border-gray-200/90 text-xs font-sans animate-in fade-in slide-in-from-right-4 duration-200">
+            
+            {/* Header */}
+            <div className="flex items-start justify-between gap-2 pb-2 border-b border-gray-100">
+              <div>
+                <div className="flex items-center gap-1.5">
+                  <span 
+                    className="w-2.5 h-2.5 rounded-full" 
+                    style={{ backgroundColor: ACTION_CATEGORIES[selectedSite.actionType]?.color || '#DC2626' }}
+                  />
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-gray-500">
+                    {ACTION_CATEGORIES[selectedSite.actionType]?.shortLabel || 'Tactical Site'}
+                  </span>
+                  <span className={`text-[9px] font-bold px-1.5 py-0.2 rounded-full ${
+                    selectedSite.threatLevel === 'CRITICAL' ? 'bg-red-100 text-red-700' : 'bg-amber-100 text-amber-700'
+                  }`}>
+                    {selectedSite.threatLevel}
+                  </span>
+                </div>
+                <h3 className="text-sm font-bold text-gray-900 mt-1 leading-snug">
+                  {selectedSite.name}
+                </h3>
+              </div>
+
+              <button
+                onClick={() => setSelectedSite(null)}
+                className="p-1 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            {/* Content Details */}
+            <div className="mt-3 space-y-2.5">
+              <div className="bg-gray-50 p-2.5 rounded-xl border border-gray-100">
+                <div className="text-[10px] text-gray-400 font-semibold uppercase">Primary Metric / Seizure</div>
+                <div className="text-xs font-bold text-gray-900 mt-0.5">{selectedSite.seizureMetric}</div>
+                <div className="text-[10px] text-gray-500 mt-1">
+                  📍 {selectedSite.city}, {selectedSite.country} ({selectedSite.lat.toFixed(4)}, {selectedSite.lng.toFixed(4)})
+                </div>
+              </div>
+
+              <div>
+                <div className="text-[10px] font-bold text-gray-500 uppercase">Operational Status</div>
+                <p className="text-xs text-gray-700 mt-0.5 leading-relaxed font-medium">
+                  {selectedSite.status}
+                </p>
+              </div>
+
+              <div>
+                <div className="text-[10px] font-bold text-gray-500 uppercase">Intelligence Summary</div>
+                <p className="text-[11px] text-gray-600 mt-0.5 leading-relaxed">
+                  {selectedSite.operationalNotes}
+                </p>
+              </div>
+
+              {selectedSite.relatedEntities.length > 0 && (
+                <div>
+                  <div className="text-[10px] font-bold text-gray-500 uppercase mb-1">Related POLE Entities</div>
+                  <div className="flex flex-wrap gap-1">
+                    {selectedSite.relatedEntities.map((ent, i) => (
+                      <span key={i} className="px-2 py-0.5 bg-gray-100 text-gray-700 rounded-md text-[10px] font-medium">
+                        {ent}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Action Buttons */}
+              <div className="pt-2 flex items-center gap-1.5 border-t border-gray-100">
+                <button
+                  onClick={() => {
+                    const matchNode = nodes.find(n => n.name.toLowerCase().includes(selectedSite.name.toLowerCase()) || selectedSite.name.toLowerCase().includes(n.name.toLowerCase()));
+                    if (matchNode) {
+                      onSelectNode(matchNode);
+                    }
+                  }}
+                  className="flex-1 py-1.5 px-2 bg-[#182018] text-white rounded-lg text-xs font-semibold hover:bg-black text-center transition-colors"
+                >
+                  Inspect POLE Node
+                </button>
+                <button
+                  onClick={() => setIsJudicialModeOpen(true)}
+                  className="py-1.5 px-2.5 bg-gray-100 text-gray-700 rounded-lg text-xs font-semibold hover:bg-gray-200 transition-colors"
+                  title="Evidence Dossier"
+                >
+                  Evidence
+                </button>
+              </div>
+            </div>
+
+          </div>
+        )}
+
       </div>
 
       {/* ================================================================
-          BOTTOM DETAIL DRAWER: TACTICAL TARGET DOSSIER
+          MODALS & DRAWERS (INTEGRATED & CLEAN)
       ================================================================ */}
-      {selectedSite && (
-        <div 
-          id="real-gis-dossier-panel"
-          className="shrink-0 z-20 bg-[#FBF9F5] border-t border-[#DDD4C0] px-4 py-3 shadow-lg flex flex-col md:flex-row items-start md:items-center justify-between gap-4 max-h-60 overflow-y-auto"
-        >
-          <div className="max-w-2xl">
-            <div className="flex items-center gap-2 mb-1 flex-wrap">
-              <span className={`px-2 py-0.5 rounded text-[11px] font-bold uppercase tracking-wider flex items-center gap-1 ${
-                ACTION_CATEGORIES[selectedSite.actionType]?.badgeBg || 'bg-red-50'
-              } ${
-                ACTION_CATEGORIES[selectedSite.actionType]?.badgeText || 'text-red-700'
-              } border border-[#DDD4C0]`}>
-                ⊙ {ACTION_CATEGORIES[selectedSite.actionType]?.shortLabel || 'Tactical Target'}
-              </span>
-              <h3 className="font-bold text-sm text-[#243324]">
-                {selectedSite.name}
-              </h3>
-              <span className="text-xs text-[#DC2626] font-bold">
-                • {selectedSite.seizureMetric}
-              </span>
-            </div>
-            
-            <p className="text-xs text-[#4A5B4C] leading-relaxed">
-              {selectedSite.operationalNotes}
-            </p>
-
-            <div className="flex items-center gap-2 mt-1.5 flex-wrap">
-              <span className="text-[11px] font-semibold text-[#6B7D6C]">Evidentiary Proof:</span>
-              <span className="text-[11px] text-[#243324] bg-[#EFE8DC] px-2 py-0.5 rounded font-mono">
-                {selectedSite.evidenceSummary}
-              </span>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-2 shrink-0 self-end md:self-center">
-            <button
-              onClick={() => {
-                leafletMapRef.current?.flyTo([selectedSite.lat, selectedSite.lng], 16, { duration: 1.0 });
-              }}
-              className="px-3 py-1.5 rounded-md bg-[#243324] text-[#FBF9F5] text-xs font-semibold hover:bg-[#1A261A] flex items-center gap-1.5 shadow-xs"
-            >
-              <Crosshair className="w-3.5 h-3.5 text-amber-300" />
-              <span>Street Level Zoom</span>
-            </button>
-            <button
-              onClick={() => setSelectedSite(null)}
-              className="px-3 py-1.5 rounded-md border border-[#DDD4C0] bg-white text-xs font-semibold text-[#4A5B4C] hover:bg-[#EFE8DC]"
-            >
-              Close
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* ================================================================
-          6 MAJOR ENHANCEMENT MODALS & DRAWERS
-      ================================================================ */}
-      
-      {/* 1. Multi-Jurisdiction Financial Flow Sankey Drawer */}
       <FinancialFlowSankeyDrawer
         isOpen={isSankeyDrawerOpen}
         onClose={() => setIsSankeyDrawerOpen(false)}
-        selectedCaseId={activeCaseFilter as any}
+        selectedCaseId={activeCaseFilter}
         onSelectArcOnMap={(arc) => {
+          setIsSankeyDrawerOpen(false);
           if (leafletMapRef.current) {
-            leafletMapRef.current.flyTo(arc.sourceCoords, 7);
+            leafletMapRef.current.flyTo(arc.sourceCoords, 8);
           }
         }}
       />
 
-      {/* 2. Cross-Case Entity Resolution Studio */}
       <CrossCaseNexusModal
         isOpen={isNexusModalOpen}
         onClose={() => setIsNexusModalOpen(false)}
       />
 
-      {/* 3. Algorithmic Manifest Anomaly & Port Vulnerability Index */}
       <ManifestRiskScorerModal
         isOpen={isManifestRiskModalOpen}
         onClose={() => setIsManifestRiskModalOpen(false)}
       />
 
-      {/* 4. Judicial Courtroom Presentation Mode */}
       <JudicialCourtroomMode
         isOpen={isJudicialModeOpen}
         onClose={() => setIsJudicialModeOpen(false)}
-        selectedCaseId={activeCaseFilter as any}
+        selectedCaseId={activeCaseFilter}
       />
 
     </div>

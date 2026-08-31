@@ -28,9 +28,30 @@
   filter: sepia(0.25) saturate(0.9) brightness(0.98) contrast(1.02) !important;
 }
 
-/* Clean Minimal High Contrast */
-.tiles-minimal .leaflet-tile {
-  filter: grayscale(0.85) sepia(0.15) brightness(0.95) contrast(1.15) !important;
+/* Clean Minimal Positron & Stadia Smooth */
+.tiles-minimal .leaflet-tile,
+.tiles-stadia-smooth .leaflet-tile {
+  filter: contrast(1.04) brightness(0.99) !important;
+}
+
+/* Stamen Toner High-Contrast Ink */
+.tiles-toner .leaflet-tile {
+  filter: contrast(1.1) brightness(0.98) !important;
+}
+
+/* Outdoors */
+.tiles-outdoors .leaflet-tile {
+  filter: saturate(0.95) contrast(1.02) !important;
+}
+
+/* OpenStreetMap Standard */
+.tiles-osm .leaflet-tile {
+  filter: saturate(0.92) contrast(1.02) !important;
+}
+
+/* Topographic Relief */
+.tiles-topo .leaflet-tile {
+  filter: saturate(0.85) contrast(1.05) !important;
 }
 
 /* Custom Leaflet Tooltips & Popups */
