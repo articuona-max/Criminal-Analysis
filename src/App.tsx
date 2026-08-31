@@ -3,7 +3,7 @@ import { Sidebar, SidebarTab } from './components/Sidebar';
 import { TopNav, ViewTab } from './components/TopNav';
 import { ForceGraph, GraphColorMode } from './components/ForceGraph';
 import { GeoMap } from './components/GeoMap';
-import { TimelineScrubber } from './components/TimelineScrubber';
+import { UnifiedTemporalTelemetry } from './components/UnifiedTemporalTelemetry';
 import { EvidenceChain } from './components/EvidenceChain';
 import { NodeFilter } from './components/NodeFilter';
 import { NodeDetail } from './components/NodeDetail';
@@ -20,6 +20,7 @@ import { JudicialCourtroomMode } from './components/JudicialCourtroomMode';
 import { POLENode, AlertItem, CaseId, POLEType } from './types';
 import { MOCK_NODES, MOCK_EDGES, MOCK_ALERTS, TIMELINE_SNAPSHOTS } from './data/mockData';
 import { IntelligenceEngine, GraphFilterCriteria } from './data/intelligenceEngine';
+import { REAL_4D_TRACKS, TelemetryTrack } from './data/intelligence4DEngine';
 
 export function App() {
   // Sidebar & View Navigation State
@@ -48,9 +49,22 @@ export function App() {
   const [selectedNode, setSelectedNode] = useState<POLENode | null>(null);
   const [hoveredNodeId, setHoveredNodeId] = useState<string | null>(null);
 
-  // Timeline Scrubber State
+  // Timeline & 4D Telemetry Synchronized State
   const dateList = useMemo(() => TIMELINE_SNAPSHOTS.map(s => s.date), []);
   const [currentDateIndex, setCurrentDateIndex] = useState(dateList.length - 1);
+  const [activeTelemetryTrack, setActiveTelemetryTrack] = useState<TelemetryTrack>(REAL_4D_TRACKS[0]);
+  const [currentTelemetryWaypointIndex, setCurrentTelemetryWaypointIndex] = useState(0);
+
+  // Auto-switch track when selected real-world case changes
+  useEffect(() => {
+    const matchingTracks = REAL_4D_TRACKS.filter(
+      t => selectedCaseId === 'CASE_ALL' || t.caseId === selectedCaseId
+    );
+    if (matchingTracks.length > 0) {
+      setActiveTelemetryTrack(matchingTracks[0]);
+      setCurrentTelemetryWaypointIndex(0);
+    }
+  }, [selectedCaseId]);
 
   // Modals & Panels State
   const [isAlertsOpen, setIsAlertsOpen] = useState(false);
@@ -257,6 +271,10 @@ export function App() {
                 timelineStartDate="2018-01-01"
                 timelineEndDate={dateList[currentDateIndex]}
                 selectedCaseId={selectedCaseId}
+                activeTelemetryTrack={activeTelemetryTrack}
+                currentTelemetryWaypointIndex={currentTelemetryWaypointIndex}
+                onSelectTelemetryTrack={setActiveTelemetryTrack}
+                onTelemetryWaypointChange={setCurrentTelemetryWaypointIndex}
               />
             )}
 
@@ -291,16 +309,30 @@ export function App() {
                     timelineStartDate="2018-01-01"
                     timelineEndDate={dateList[currentDateIndex]}
                     selectedCaseId={selectedCaseId}
+                    activeTelemetryTrack={activeTelemetryTrack}
+                    currentTelemetryWaypointIndex={currentTelemetryWaypointIndex}
+                    onSelectTelemetryTrack={setActiveTelemetryTrack}
+                    onTelemetryWaypointChange={setCurrentTelemetryWaypointIndex}
                   />
                 </div>
               </div>
             )}
 
-            {/* Bottom Floating Temporal Evolution Scrubber */}
-            <TimelineScrubber
+            {/* Bottom Floating Unified Temporal Evolution & 4D Telemetry Player */}
+            <UnifiedTemporalTelemetry
               currentDateIndex={currentDateIndex}
               setCurrentDateIndex={setCurrentDateIndex}
               dateList={dateList}
+              selectedCaseId={selectedCaseId}
+              activeTrack={activeTelemetryTrack}
+              onSelectTrack={setActiveTelemetryTrack}
+              currentWaypointIndex={currentTelemetryWaypointIndex}
+              onWaypointChange={setCurrentTelemetryWaypointIndex}
+              onFocusCoordinates={(lat, lng) => {
+                if (currentView !== 'GEOSPATIAL_MAP' && currentView !== 'SPLIT_SCREEN') {
+                  setCurrentView('GEOSPATIAL_MAP');
+                }
+              }}
             />
 
           </main>

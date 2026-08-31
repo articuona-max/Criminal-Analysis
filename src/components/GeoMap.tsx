@@ -48,6 +48,10 @@ export interface GeoMapProps {
   timelineStartDate?: string;
   timelineEndDate?: string;
   selectedCaseId?: CaseId;
+  activeTelemetryTrack?: TelemetryTrack | null;
+  currentTelemetryWaypointIndex?: number;
+  onSelectTelemetryTrack?: (track: TelemetryTrack) => void;
+  onTelemetryWaypointChange?: (index: number) => void;
 }
 
 // Action Category Colors and Metadata
@@ -792,7 +796,11 @@ export const GeoMap: React.FC<GeoMapProps> = ({
   onSelectNode,
   timelineStartDate,
   timelineEndDate,
-  selectedCaseId: propCaseId
+  selectedCaseId: propCaseId,
+  activeTelemetryTrack,
+  currentTelemetryWaypointIndex,
+  onSelectTelemetryTrack,
+  onTelemetryWaypointChange
 }) => {
   const mapContainerRef = useRef<HTMLDivElement | null>(null);
   const leafletMapRef = useRef<L.Map | null>(null);
@@ -822,7 +830,7 @@ export const GeoMap: React.FC<GeoMapProps> = ({
   const [selectedSite, setSelectedSite] = useState<RealTacticalPoint | null>(null);
   const [showLayerMenu, setShowLayerMenu] = useState<boolean>(false);
   const [showTileMenu, setShowTileMenu] = useState<boolean>(false);
-  const [show4DPlayer, setShow4DPlayer] = useState<boolean>(true);
+  const [show4DPlayer, setShow4DPlayer] = useState<boolean>(false);
   const [is4DPlayerCollapsed, setIs4DPlayerCollapsed] = useState<boolean>(false);
 
   // Modals
@@ -831,11 +839,41 @@ export const GeoMap: React.FC<GeoMapProps> = ({
   const [isManifestRiskModalOpen, setIsManifestRiskModalOpen] = useState<boolean>(false);
   const [isJudicialModeOpen, setIsJudicialModeOpen] = useState<boolean>(false);
 
-  // 4D Motion Playback State
-  const [activeTrack, setActiveTrack] = useState<TelemetryTrack>(REAL_4D_TRACKS[0]);
-  const [currentWaypointIndex, setCurrentWaypointIndex] = useState<number>(0);
+  // 4D Motion Playback State (Unified or fallback local)
+  const [localActiveTrack, setLocalActiveTrack] = useState<TelemetryTrack>(REAL_4D_TRACKS[0]);
+  const [localWaypointIndex, setLocalWaypointIndex] = useState<number>(0);
   const [isPlaying4D, setIsPlaying4D] = useState<boolean>(false);
   const [playbackSpeed, setPlaybackSpeed] = useState<number>(1);
+
+  const activeTrack = activeTelemetryTrack || localActiveTrack;
+  const currentWaypointIndex = typeof currentTelemetryWaypointIndex === 'number' 
+    ? currentTelemetryWaypointIndex 
+    : localWaypointIndex;
+
+  const setCurrentWaypointIndex = (idx: number | ((prev: number) => number)) => {
+    if (typeof idx === 'function') {
+      const next = idx(currentWaypointIndex);
+      if (onTelemetryWaypointChange) {
+        onTelemetryWaypointChange(next);
+      } else {
+        setLocalWaypointIndex(next);
+      }
+    } else {
+      if (onTelemetryWaypointChange) {
+        onTelemetryWaypointChange(idx);
+      } else {
+        setLocalWaypointIndex(idx);
+      }
+    }
+  };
+
+  const setActiveTrack = (track: TelemetryTrack) => {
+    if (onSelectTelemetryTrack) {
+      onSelectTelemetryTrack(track);
+    } else {
+      setLocalActiveTrack(track);
+    }
+  };
 
   // Filter State
   const [selectedActionFilter, setSelectedActionFilter] = useState<string>('ALL');
