@@ -13,7 +13,9 @@ import {
   Layers,
   Combine,
   Lock,
-  Compass
+  Compass,
+  Scale,
+  DollarSign
 } from 'lucide-react';
 import { CaseId } from '../types';
 import { REAL_CASE_PROFILES, REAL_ANOMALIES } from '../data/realCasesData';
@@ -27,6 +29,10 @@ interface HeaderProps {
   onOpenAlerts: () => void;
   onOpenMotifs: () => void;
   onOpenAnomalyMapper: () => void;
+  onOpenJudicialMode?: () => void;
+  onOpenNexusModal?: () => void;
+  onOpenManifestScorer?: () => void;
+  onOpenFinancialFlows?: () => void;
   selectedCaseId: CaseId;
   onSelectCaseId: (caseId: CaseId) => void;
   searchQuery: string;
@@ -42,6 +48,10 @@ export const Header: React.FC<HeaderProps> = ({
   onOpenAlerts,
   onOpenMotifs,
   onOpenAnomalyMapper,
+  onOpenJudicialMode,
+  onOpenNexusModal,
+  onOpenManifestScorer,
+  onOpenFinancialFlows,
   selectedCaseId,
   onSelectCaseId,
   searchQuery,
@@ -163,11 +173,59 @@ export const Header: React.FC<HeaderProps> = ({
               title="Real-World Case Anomaly & Evidence Mapper"
             >
               <Activity className="w-3.5 h-3.5 text-amber-300" />
-              <span>Anomaly Mapper</span>
+              <span className="hidden sm:inline">Anomalies</span>
               <span className="px-1.5 py-0.2 rounded-full bg-white/20 text-[#FBF9F5] text-[10px] font-bold">
                 {activeAnomaliesCount}
               </span>
             </button>
+
+            {/* Financial Flows Sankey Drawer */}
+            {onOpenFinancialFlows && (
+              <button
+                onClick={onOpenFinancialFlows}
+                className="flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-[#EBE5D8] border border-[#D5CEBF] text-[#243324] text-xs font-semibold hover:bg-[#E0D9C8] transition-colors shadow-2xs"
+                title="Multi-Jurisdiction Financial Flow & Hawala Sankey"
+              >
+                <DollarSign className="w-3.5 h-3.5 text-amber-700" />
+                <span className="hidden md:inline">Financial Flows</span>
+              </button>
+            )}
+
+            {/* Syndicate Cross-Case Nexus */}
+            {onOpenNexusModal && (
+              <button
+                onClick={onOpenNexusModal}
+                className="flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-[#EBE5D8] border border-[#D5CEBF] text-[#243324] text-xs font-semibold hover:bg-[#E0D9C8] transition-colors shadow-2xs"
+                title="Syndicate Nexus & Cross-Case Entity Resolution"
+              >
+                <Combine className="w-3.5 h-3.5 text-emerald-700" />
+                <span className="hidden md:inline">Nexus</span>
+              </button>
+            )}
+
+            {/* Manifest Risk Scorer */}
+            {onOpenManifestScorer && (
+              <button
+                onClick={onOpenManifestScorer}
+                className="flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-[#EBE5D8] border border-[#D5CEBF] text-[#243324] text-xs font-semibold hover:bg-[#E0D9C8] transition-colors shadow-2xs"
+                title="Algorithmic Manifest Anomaly & Port Vulnerability Index"
+              >
+                <Scale className="w-3.5 h-3.5 text-blue-700" />
+                <span className="hidden lg:inline">Risk Scorer</span>
+              </button>
+            )}
+
+            {/* Judicial Courtroom Mode */}
+            {onOpenJudicialMode && (
+              <button
+                onClick={onOpenJudicialMode}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#243324] text-[#FBF9F5] text-xs font-bold hover:bg-[#182318] transition-colors shadow-xs"
+                title="Courtroom Evidence Presentation & Cryptographic Chain of Custody"
+              >
+                <FileCheck className="w-3.5 h-3.5 text-amber-300" />
+                <span className="hidden sm:inline">Judicial Mode</span>
+              </button>
+            )}
 
             {/* Motifs & Burst Engine */}
             <button

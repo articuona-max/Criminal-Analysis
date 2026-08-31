@@ -12,6 +12,10 @@ import { IngestionStudio } from './components/IngestionStudio';
 import { EntityResolutionModal } from './components/EntityResolutionModal';
 import { MotifAndBurstModal } from './components/MotifAndBurstModal';
 import { AnomalyMapperModal } from './components/AnomalyMapperModal';
+import { FinancialFlowSankeyDrawer } from './components/FinancialFlowSankeyDrawer';
+import { CrossCaseNexusModal } from './components/CrossCaseNexusModal';
+import { ManifestRiskScorerModal } from './components/ManifestRiskScorerModal';
+import { JudicialCourtroomMode } from './components/JudicialCourtroomMode';
 
 import { POLENode, POLEEdge, AlertItem, CaseId } from './types';
 import { MOCK_NODES, MOCK_EDGES, MOCK_ALERTS, TIMELINE_SNAPSHOTS } from './data/mockData';
@@ -53,6 +57,10 @@ export function App() {
   const [isResolutionModalOpen, setIsResolutionModalOpen] = useState(false);
   const [isMotifsModalOpen, setIsMotifsModalOpen] = useState(false);
   const [isAnomalyMapperOpen, setIsAnomalyMapperOpen] = useState(false);
+  const [isFinancialFlowsOpen, setIsFinancialFlowsOpen] = useState(false);
+  const [isNexusModalOpen, setIsNexusModalOpen] = useState(false);
+  const [isManifestRiskOpen, setIsManifestRiskOpen] = useState(false);
+  const [isJudicialModeOpen, setIsJudicialModeOpen] = useState(false);
   const [alerts, setAlerts] = useState<AlertItem[]>(MOCK_ALERTS);
 
   // Keep search in sync with filterCriteria
@@ -184,6 +192,10 @@ export function App() {
         onOpenAlerts={() => setIsAlertsOpen(true)}
         onOpenMotifs={() => setIsMotifsModalOpen(true)}
         onOpenAnomalyMapper={() => setIsAnomalyMapperOpen(true)}
+        onOpenFinancialFlows={() => setIsFinancialFlowsOpen(true)}
+        onOpenNexusModal={() => setIsNexusModalOpen(true)}
+        onOpenManifestScorer={() => setIsManifestRiskOpen(true)}
+        onOpenJudicialMode={() => setIsJudicialModeOpen(true)}
         selectedCaseId={selectedCaseId}
         onSelectCaseId={setSelectedCaseId}
         searchQuery={searchQuery}
@@ -316,6 +328,36 @@ export function App() {
         isOpen={isMotifsModalOpen}
         onClose={() => setIsMotifsModalOpen(false)}
         onSelectSubgraph={handleSelectSubgraph}
+      />
+
+      {/* Multi-Jurisdiction Financial Flow & Hawala Sankey Drawer */}
+      <FinancialFlowSankeyDrawer
+        isOpen={isFinancialFlowsOpen}
+        onClose={() => setIsFinancialFlowsOpen(false)}
+        selectedCaseId={selectedCaseId}
+        onSelectArcOnMap={(arc) => {
+          setIsFinancialFlowsOpen(false);
+          setActiveTab('MAP');
+        }}
+      />
+
+      {/* Cross-Case Entity Resolution & Syndicate Nexus Studio */}
+      <CrossCaseNexusModal
+        isOpen={isNexusModalOpen}
+        onClose={() => setIsNexusModalOpen(false)}
+      />
+
+      {/* Algorithmic Manifest Anomaly & Port Vulnerability Index */}
+      <ManifestRiskScorerModal
+        isOpen={isManifestRiskOpen}
+        onClose={() => setIsManifestRiskOpen(false)}
+      />
+
+      {/* Judicial Courtroom Presentation & Chain of Custody Verification */}
+      <JudicialCourtroomMode
+        isOpen={isJudicialModeOpen}
+        onClose={() => setIsJudicialModeOpen(false)}
+        selectedCaseId={selectedCaseId}
       />
 
     </div>
