@@ -1,0 +1,6 @@
+{
+  "name": "Criminal Intelligence POLE Network & Tactical Anomaly Analytics",
+  "description": "AI-powered criminal intelligence platform featuring POLE graph analytics, geospatial tracking, timeline evolution, and automated anomaly detection across real-world court cases.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
