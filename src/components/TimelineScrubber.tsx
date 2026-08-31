@@ -32,7 +32,6 @@ export const TimelineScrubber: React.FC<TimelineScrubberProps> = ({
     const timer = setInterval(() => {
       setCurrentDateIndex(prev => {
         if (prev >= dateList.length - 1) {
-          setIsPlaying(false);
           return prev;
         }
         return prev + 1;
@@ -41,6 +40,22 @@ export const TimelineScrubber: React.FC<TimelineScrubberProps> = ({
 
     return () => clearInterval(timer);
   }, [isPlaying, playbackSpeed, dateList.length, setCurrentDateIndex]);
+
+  // Stop playing when the end of timeline is reached
+  useEffect(() => {
+    if (isPlaying && currentDateIndex >= dateList.length - 1) {
+      setIsPlaying(false);
+    }
+  }, [currentDateIndex, isPlaying, dateList.length]);
+
+  const handleTogglePlay = () => {
+    if (!isPlaying && currentDateIndex >= dateList.length - 1) {
+      setCurrentDateIndex(0);
+      setIsPlaying(true);
+    } else {
+      setIsPlaying(prev => !prev);
+    }
+  };
 
   // Histogram distribution sample bar heights
   const histogramBars = [
@@ -155,7 +170,7 @@ export const TimelineScrubber: React.FC<TimelineScrubberProps> = ({
           </button>
 
           <button
-            onClick={() => setIsPlaying(!isPlaying)}
+            onClick={handleTogglePlay}
             className="flex items-center gap-1.5 px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-semibold shadow-xs transition-all"
           >
             {isPlaying ? (

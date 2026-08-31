@@ -595,8 +595,8 @@ export interface OpenTileProvider {
 
 // Map API Key (Stadia Maps / Stamen)
 export const MAP_API_KEY = 
-  (import.meta as any)?.env?.VITE_STADIA_MAP_API_KEY || 
-  (import.meta as any)?.env?.VITE_MAP_API_KEY || 
+  (import.meta as any)?.env?.MAP_API_KEY || 
+  (typeof process !== 'undefined' && (process as any)?.env?.MAP_API_KEY) || 
   'eyJhbGciOiJIUzI1NiJ9.eyJhIjoiYWNfNTk4aXIzYmsiLCJqdGkiOiIyZmFiYTcxNyIsImV4cCI6MTc5MDg0MzEwMH0.kVAz0pHRgT-lpMVwd3GMsLdWTU0fNKJ9CUEVgx-Z6eE';
 
 export const OPEN_TILE_PROVIDERS: OpenTileProvider[] = [
